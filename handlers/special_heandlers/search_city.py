@@ -1,4 +1,4 @@
-from telebot.types import Message
+from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from states.user_states import UserState
 from loader import bot
 from utils.request_to_api import request_to_api
@@ -52,30 +52,27 @@ def processing_city(message: Message) -> None:
             if len(found_cities_dict) == 1:
                 bot.send_message(message.from_user.id, f'Город {[i_key for i_key in found_cities_dict.keys()]} найден')
                 bot.set_state(message.from_user.id, UserState.finish, message.chat.id)
-                # TODO сделать запоминание города
+                # TODO сделать запоминание id города
                 # for i_key in found_cities_dict.keys():
                 #     return i_key
 
             elif len(found_cities_dict) > 1:
                 bot.send_message(message.from_user.id, 'Нашлось по вашему запросу более одного города.')
-                bot.send_message(message.from_user.id, 'Пожалуйста, выберите из списка нужный вам город.')
-                for i_value in found_cities_dict.values():
-                    bot.send_message(message.from_user.id, i_value)
+                destinations = InlineKeyboardMarkup()
+                for i_key in found_cities_dict.keys():
+                    destinations.add(InlineKeyboardButton(text=found_cities_dict[i_key], callback_data=i_key))
                 bot.set_state(message.from_user.id, UserState.clarification_city, message.chat.id)
-                # TODO доделать
-                # print('Нашлось по вашему запросу более одного города.')
-                # print('Пожалуйста, выберите из списка нужный вам город.')
-                # for i_value in found_cities_dict.values():
-                #     print(i_value)
-                # caption = input()
-                # for i_key in found_cities_dict.keys():
-                #     if found_cities_dict[i_key] == caption:
-                #         return i_key
+                bot.send_message(message.from_user.id, 'Пожалуйста, выберите из списка нужный вам город:',
+                                 reply_markup=destinations)  # Отправляем кнопки с вариантами
 
             elif name_cities_list:  # если введенный город не совпадет с найденным
-                bot.send_message(message.from_user.id, 'Может вы имели город:')
+                destinations = InlineKeyboardMarkup()
                 for i_name_city in name_cities_list:
-                    bot.send_message(message.from_user.id, i_name_city)
+                    destinations.add(InlineKeyboardButton(text=found_cities_dict[i_name_city],
+                                                          callback_data=i_name_city))
+                bot.send_message(message.from_user.id, 'Может вы имели город:',
+                                 reply_markup=destinations)  # Отправляем кнопки с вариантами
+
                 # TODO доделать
                 # print('Может вы имели город: ', end='')
                 # for i_name_city in name_cities_list:
@@ -94,19 +91,15 @@ def processing_city(message: Message) -> None:
                 # return req_city()
 
         else:  # Если поиск ничего не выдал, делаем рекурсию себя, пока не будет введен существующий город
-            bot.send_message(message.from_user.id, f'Город {name_city} не найден.')
-            # TODO доделать
-            # print('Город {name_city} не найден.'.format(
-            #     name_city=name_city
-            # ))
-            # return req_city()
+            bot.send_message(message.from_user.id, f'Город {name_city} не найден.\nВведите правильное название города:')
     else:
         raise Exception('В ответе (на запрос "города") нет нужного ключа')
 
 
-@bot.message_handler(state=UserState.clarification_city)
-def processing_city(message: Message) -> None:
-    bot.send_message(message.from_user.id, 'Перешел в состояние уточнения города')
+@bot.callback_query_handler(func=lambda call: True)
+def processing_city(call: CallbackQuery) -> None:
+    bot.send_message(call.message.chat.id, f'Перешел в состояние уточнения города. id {call.data}')
+    bot.answer_callback_query(call.id)
 
 
 @bot.message_handler(state=UserState.finish)
