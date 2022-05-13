@@ -1,32 +1,26 @@
-import requests
-import json
-import re
-
-# my_req = requests.get('')
-
-url = "https://hotels4.p.rapidapi.com/locations/v2/search"
-
-querystring = {"query": 'New York', "locale": "en_US", "currency": "USD"}
-
-headers = {
-    "X-RapidAPI-Host": "hotels4.p.rapidapi.com",
-    "X-RapidAPI-Key": "85191b6f8amsh16080972da99f1fp1948b6jsn4ddc6a481917"
-}
-
-response = requests.request("GET", url, headers=headers, params=querystring)
+import telebot
 
 
-# pattern = r'(?<="CITY_GROUP",).+?[\]]'
-pattern = r'(?<="CITY_GROUP","entities":).+?[\]]'
-find = re.search(pattern, response.text)
-print(find)
-if find:
-    data = json.loads(find[0])
-
-    with open('test.json', 'w') as file:
-        json.dump(data, file, indent=4)
+bot = telebot.TeleBot("5350202476:AAFwlevujOZziIv-nPQ6KeETmBCs5PKD_sc")
 
 
 
+@bot.message_handler(content_types=['text'])
+def get_text_messages(message):
+    if message.text == "/Привет":
+        bot.send_message(message.from_user.id, "И тебе привет.")
+    elif message.text == "/help" or message.text == "/start":
+        text = 'Поддерживаемые команды:\n' \
+               '/lowprice - поиск самых дешёвых отелей в городе\n' \
+               '/highprice - поиск самых дорогих отелей в городе\n' \
+               '/bestdeal - поиск отелей, наиболее подходящих по цене и расположению от центра\n' \
+               '/history - узнать историю поиска отелей'
 
-print(response.text)
+        bot.send_message(message.from_user.id, text)
+    else:
+        bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
+
+
+bot.polling()
+
+telebot.TeleBot.set_my_commands()
