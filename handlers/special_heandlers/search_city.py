@@ -1,4 +1,5 @@
-from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, KeyboardButton, \
+    ReplyKeyboardMarkup
 from states.user_states import UserState
 from loader import bot
 from utils.request_to_api import request_to_api
@@ -15,7 +16,7 @@ def input_city(message: Message) -> None:
 
 @bot.message_handler(state=UserState.input_city)
 def processing_city(message: Message) -> None:
-    name_city = message.text
+    name_city = message.text.capitalize()
     url = "https://hotels4.p.rapidapi.com/locations/v2/search"
     querystring = {"query": name_city, "locale": "en_US", "currency": "USD"}
     response = request_to_api(url, querystring)  # ответ на запрос
@@ -49,7 +50,7 @@ def processing_city(message: Message) -> None:
 
 
             # Анализ вариантов ответа и действия на них
-            if len(found_cities_dict) == 1:
+            if len(found_cities_dict) == 1:  # Если нашелся только один вариант
                 bot.send_message(message.from_user.id, f'Город {[i_key for i_key in found_cities_dict.keys()]} найден')
                 bot.set_state(message.from_user.id, UserState.finish, message.chat.id)
                 # TODO сделать запоминание id города
@@ -65,11 +66,11 @@ def processing_city(message: Message) -> None:
                 bot.send_message(message.from_user.id, 'Пожалуйста, выберите из списка нужный вам город:',
                                  reply_markup=destinations)  # Отправляем кнопки с вариантами
 
+
             elif name_cities_list:  # если введенный город не совпадет с найденным
-                destinations = InlineKeyboardMarkup()
+                destinations = ReplyKeyboardMarkup()
                 for i_name_city in name_cities_list:
-                    destinations.add(InlineKeyboardButton(text=found_cities_dict[i_name_city],
-                                                          callback_data=i_name_city))
+                    destinations.add(KeyboardButton(text=i_name_city))
                 bot.send_message(message.from_user.id, 'Может вы имели город:',
                                  reply_markup=destinations)  # Отправляем кнопки с вариантами
 
