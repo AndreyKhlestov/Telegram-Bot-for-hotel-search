@@ -2,11 +2,15 @@ from loader import bot
 from states.user_states import UserState
 from telegram_bot_calendar import DetailedTelegramCalendar
 from telebot.types import Message, CallbackQuery
+from utils.data import set_data, get_data
 
 
 def hotel_search(user_id: int, chat_id: int) -> None:
     bot.set_state(user_id, UserState.check_In, chat_id)
     start_calendar(user_id, chat_id)
+
+
+
 
 
 def choosing_actions(user_id: int, chat_id: int) -> str:
@@ -37,13 +41,11 @@ def input_data_in_calendar(call: CallbackQuery):
                               call.message.chat.id,
                               call.message.message_id)
         if bot.get_state(call.from_user.id, call.message.chat.id) == 'UserState:check_In':
-            with bot.retrieve_data(call.from_user.id, call.message.chat.id) as data:
-                data['check_In'] = result
+            set_data(call.from_user.id, call.message.chat.id, 'check_In', result)
             bot.set_state(call.from_user.id, UserState.check_Out, call.message.chat.id)
             start_calendar(call.from_user.id, call.message.chat.id)
         else:
-            with bot.retrieve_data(call.from_user.id, call.message.chat.id) as data:
-                data['check_Out'] = result
+            set_data(call.from_user.id, call.message.chat.id, 'check_Out', result)
             bot.set_state(call.from_user.id, UserState.quantity_hotels, call.message.chat.id)
             quantity_hotels(call.from_user.id, call.message.chat.id)
 
