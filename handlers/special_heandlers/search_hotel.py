@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 
 
 def hotel_search(user_id: int, chat_id: int) -> None:
+    """Начало процедуры поиска отеля"""
     bot.set_state(user_id, UserState.check_In, chat_id)
     start_calendar(user_id, chat_id)
 
@@ -24,15 +25,12 @@ def choosing_actions(user_id: int, chat_id: int) -> tuple:
 
 def start_calendar(user_id: int, chat_id: int):
     text, my_date = choosing_actions(user_id, chat_id)
-    # date = start_date(user_id, chat_id)
     calendar, step = DetailedTelegramCalendar(min_date=my_date, locale='ru').build()
     bot.send_message(user_id, f'Выберете дату {text}', reply_markup=calendar)
-    # current_date=datetime.now().date()
 
 
 @bot.callback_query_handler(func=DetailedTelegramCalendar.func())
 def input_data_in_calendar(call: CallbackQuery) -> None:
-    # date = start_date(call.from_user.id, call.message.chat.id)
     text, my_date = choosing_actions(call.from_user.id, call.message.chat.id)
     result, key, step = DetailedTelegramCalendar(min_date=my_date, locale='ru').process(call.data)
 
