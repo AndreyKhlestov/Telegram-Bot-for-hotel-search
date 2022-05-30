@@ -7,6 +7,4 @@ class UserState(StatesGroup):
     check_In = State()
     check_Out = State()
     quantity_hotels = State()
-    # found_cities = State()
-    # clarification_city = State()
     finish = State()

@@ -19,8 +19,9 @@ def processing_city(message: Message) -> None:
     name_city = message.text.capitalize()
     if search_city(name_city):
         found_cities_dict = search_city(name_city)
+        keyboards = inline_keyboards(found_cities_dict)
         bot.send_message(message.from_user.id, 'Пожалуйста, выберите из списка нужный вам город:',
-                         reply_markup=inline_keyboards(found_cities_dict))  # Отправляем кнопки с вариантами
+                         reply_markup=keyboards)  # Отправляем кнопки с вариантами
     else:  # Если поиск ничего не выдал
         bot.send_message(message.from_user.id, f'Город {name_city} не найден.\nВведите правильное название города:')
 
@@ -42,3 +43,6 @@ def correction_city(call: CallbackQuery) -> None:
     set_data(call.from_user.id, call.message.chat.id, 'id_city', call.data)
     set_data(call.from_user.id, call.message.chat.id, 'location', location)
     hotel_search(call.from_user.id, call.message.chat.id)
+
+
+

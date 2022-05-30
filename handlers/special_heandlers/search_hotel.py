@@ -5,6 +5,7 @@ from telebot.types import Message, CallbackQuery
 from utils.data import set_data, get_data
 from keyboards.inline.keyboard_yes_or_no import keyboards_yes_or_no
 from datetime import datetime, timedelta
+from keyboards.reply.default_reply_keyboard import reply_keyboards
 
 
 def hotel_search(user_id: int, chat_id: int) -> None:
@@ -14,6 +15,7 @@ def hotel_search(user_id: int, chat_id: int) -> None:
 
 
 def choosing_actions(user_id: int, chat_id: int) -> tuple:
+    """Функция для выдачи слова и начальной даты для календаря в зависимости от состояния пользователя"""
     if bot.get_state(user_id, chat_id) == 'UserState:check_In':
         text = 'заезда'
         new_date = datetime.now().date()
@@ -66,11 +68,24 @@ def confirmation_date(call: CallbackQuery) -> None:
         else:
             set_data(call.from_user.id, call.message.chat.id, 'check_Out', result)
             bot.set_state(call.from_user.id, UserState.quantity_hotels, call.message.chat.id)
-            quantity_hotels(call.from_user.id, call.message.chat.id)
+            start_quantity_hotels(call.from_user.id, call.message.chat.id)
     else:
         bot.delete_message(call.message.chat.id, call.message.id)
         start_calendar(call.from_user.id, call.message.chat.id)
 
 
-def quantity_hotels(user_id: int, chat_id: int) -> None:
-    bot.send_message(user_id, f'Перешел в состояние ввода количества отелей {bot.get_state(user_id, chat_id)}')
+def start_quantity_hotels(user_id: int, chat_id: int) -> None:
+    bot.send_message(user_id, 'Введите количество отелей, которые необходимо вывести в результате (не больше 25)')
+
+
+@bot.message_handler(state=UserState.quantity_hotels)
+def quantity_hotels(message: Message) -> None:
+    if message.text.isdigit():
+        set_data(message.from_user.id, message.chat.id, 'num_hotels', message.text)
+
+    else:
+        bot.edit_message_text('Количество отелей должно быть числом\n '
+                              'Введите количество отелей, которые необходимо вывести в результате (не больше 25)',
+                              message.chat.id, message.message_id,
+                              reply_markup=reply_keyboards([3, 5, 7, 10, 15, 20, 25]))
+
