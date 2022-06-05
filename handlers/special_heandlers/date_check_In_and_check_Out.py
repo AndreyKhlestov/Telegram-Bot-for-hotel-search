@@ -84,5 +84,5 @@ def confirmation_date(call: CallbackQuery) -> None:
 @bot.message_handler(state=[UserState.check_In, UserState.check_Out])
 def error_input_date(message: Message) -> None:
     """Функция для оповещения пользователя о неверных действиях"""
-    bot.send_message(message.chat.id, 'При выборе даты, ввод осуществляется только через кнопки в самом сообщении!'
+    bot.send_message(message.chat.id, 'При выборе даты, ввод осуществляется только через кнопки в самом сообщении!\n'
                                       'Пожалуйста, нажмите на кнопу сообщения выше')
