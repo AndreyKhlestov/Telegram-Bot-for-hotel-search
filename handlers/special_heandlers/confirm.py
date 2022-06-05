@@ -1,6 +1,6 @@
 from loader import bot
 from states.user_states import UserState
-from telebot.types import CallbackQuery, Message
+from telebot.types import CallbackQuery
 from utils.data import get_data
 from keyboards.inline.keyboard_yes_or_no import keyboards_yes_or_no
 import re
@@ -31,12 +31,3 @@ def confirmation_date(call: CallbackQuery) -> None:
         ask_photo(call.from_user.id, call.message.chat.id)
     else:
         start_search_city(call.from_user.id, call.message.chat.id)
-
-
-@bot.message_handler(state=UserState.confirm)
-def error_confirm(message: Message) -> None:
-    """Функция для оповещения пользователя о неверных действиях при подтверждении введенных данных"""
-    bot.send_message(message.chat.id, 'Подтверждение или отказ от введенных данных осуществляется только через кнопки '
-                                      '"Да" или "Нет" в самом сообщении!\n'
-                                      'Пожалуйста, нажмите на кнопу сообщения выше')
-

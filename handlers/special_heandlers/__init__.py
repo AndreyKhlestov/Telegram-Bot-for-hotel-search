@@ -4,3 +4,4 @@ from . import quantity_hotels
 from . import confirm
 from . import ask_photo
 from . import send_inf_hotel
+from . import error_input_yes_or_no

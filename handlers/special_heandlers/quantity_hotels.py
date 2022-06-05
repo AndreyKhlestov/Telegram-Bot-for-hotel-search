@@ -14,7 +14,7 @@ def start_quantity_hotels(user_id: int, chat_id: int) -> None:
 
 @bot.message_handler(state=UserState.quantity_hotels)
 def quantity_hotels(message: Message) -> None:
-    """Функция для выполнения действий после ввода пользователя количества отелей"""
+    """Функция для выполнения действий после ввода пользователем количества отелей"""
     from handlers.special_heandlers.confirm import confirm
     if message.text.isdigit():
         if 0 < int(message.text) <= 25:
