@@ -12,9 +12,10 @@ def request_to_api(url: str, querystring: dict) -> Response:
         }
         # Парсим (используем таймаут(timeout) у запроса, чтобы не ждать продолжительное время ответа от сервера)
         response = requests.request("GET", url, headers=headers, params=querystring, timeout=10)
+
         if response.status_code == requests.codes.ok:  # проверка статус кода ответа
             return response
         else:
-            raise Exception('Статус код запроса "города" не положительный')
+            raise Exception('Статус кода запроса не положительный')
     except Exception:
-        pass
+        raise Exception('Статус кода запроса не положительный')
