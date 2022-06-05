@@ -1,5 +1,4 @@
 from . import search_city
-from . import search_hotel
 from . import date_check_In_and_check_Out
 from . import quantity_hotels
 from . import confirm
