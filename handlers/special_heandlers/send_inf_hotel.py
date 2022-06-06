@@ -13,7 +13,7 @@ def send_hotel_inf(user_id: int, chat_id: int) -> None:
         if quantity_photo:
             list_url_photo = get_photos(id_hotel, quantity_photo)
             if int(quantity_photo) == 1:
-                bot.send_photo(chat_id, list_url_photo[0])
+                bot.send_photo(chat_id, list_url_photo[0].media)
             else:
                 bot.send_media_group(chat_id, list_url_photo)
         bot.send_message(user_id, text)
