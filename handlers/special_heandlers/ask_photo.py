@@ -4,7 +4,7 @@ from telebot.types import Message, CallbackQuery, ReplyKeyboardRemove
 from utils.data import set_data
 from keyboards.inline.keyboard_yes_or_no import keyboards_yes_or_no
 from keyboards.reply.default_reply_keyboard import reply_keyboards
-from handlers.special_heandlers.send_inf_hotel import send_hotel_inf
+from handlers.special_heandlers.send_inf_hotel import start_send_hotel_inf
 from loguru import logger
 
 
@@ -31,7 +31,7 @@ def confirmation_date(call: CallbackQuery) -> None:
         bot.edit_message_text('Вывод фотографий отключен',
                               call.message.chat.id,
                               call.message.message_id)
-        send_hotel_inf(call.from_user.id, call.message.chat.id)
+        start_send_hotel_inf(call.from_user.id, call.message.chat.id)
 
 
 @bot.message_handler(state=UserState.quantity_photo)
@@ -43,8 +43,8 @@ def quantity_photo(message: Message) -> None:
             set_data(message.from_user.id, message.chat.id, 'num_photo', message.text)
             bot.send_message(message.from_user.id, f'Включен вывод фотографий по {message.text} шт.',
                              reply_markup=ReplyKeyboardRemove())
-            send_hotel_inf(message.from_user.id, message.chat.id)
+            start_send_hotel_inf(message.from_user.id, message.chat.id)
         else:
             bot.send_message(message.from_user.id, 'Количество фотографий должно быть больше 0 и не больше 10\n ')
     else:
-        bot.send_message(message.from_user.id, 'Количество фотографий должно быть числом\n ')
+        bot.send_message(message.from_user.id, 'Количество фотографий должно быть целым числом\n ')

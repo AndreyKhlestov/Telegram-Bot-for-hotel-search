@@ -31,4 +31,4 @@ def set_max_distance(message: Message) -> None:
             bot.send_message(message.from_user.id, 'Расстояние до центра города должно быть больше минимального\n ')
 
     else:
-        bot.send_message(message.from_user.id, 'Расстояние до центра города должно быть числом\n ')
+        bot.send_message(message.from_user.id, 'Расстояние до центра города должно быть целым числом\n ')

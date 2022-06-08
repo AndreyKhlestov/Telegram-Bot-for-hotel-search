@@ -29,4 +29,4 @@ def set_price_min(message: Message) -> None:
             bot.send_message(message.from_user.id, 'Цена отелей должна быть больше 0\n ')
 
     else:
-        bot.send_message(message.from_user.id, 'Цена отелей должна быть числом\n ')
+        bot.send_message(message.from_user.id, 'Цена отелей должна быть целым числом\n ')
