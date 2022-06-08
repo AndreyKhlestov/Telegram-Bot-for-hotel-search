@@ -2,8 +2,9 @@ from telebot.types import Message, CallbackQuery
 from states.user_states import UserState
 from loader import bot
 from utils.search_city import search_city
-from utils.data import set_data
+from utils.data import set_data, get_data
 from keyboards.inline.default_inline_keyboards import inline_keyboards
+from handlers.special_heandlers.price_min import start_prise_min
 
 
 def start_search_city(user_id: int, chat_id: int) -> None:
@@ -45,7 +46,10 @@ def correction_city(call: CallbackQuery) -> None:
                           call.message.message_id)
     set_data(call.from_user.id, call.message.chat.id, 'destination_Id', call.data)
     set_data(call.from_user.id, call.message.chat.id, 'location', location)
-    start_calendar(call.from_user.id, call.message.chat.id)
+    if get_data(call.from_user.id, call.message.chat.id, 'commands') == 'bestdeal':
+        start_prise_min(call.from_user.id, call.message.chat.id)
+    else:
+        start_calendar(call.from_user.id, call.message.chat.id)
 
 
 
