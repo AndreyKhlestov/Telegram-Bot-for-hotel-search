@@ -1,8 +1,10 @@
 import requests
 from requests import Response
 from config_data import config
+from loguru import logger
 
 
+@logger.catch()
 def request_to_api(url: str, querystring: dict) -> Response:
     """Универсальная функция для запросов к API"""
     try:

@@ -2,8 +2,10 @@ from utils.request_to_api import request_to_api
 import re
 import json
 from telebot.types import InputMediaPhoto
+from loguru import logger
 
 
+@logger.catch()
 def get_photos(id_hotel: str, quantity_photo: str):
 
     url = "https://hotels4.p.rapidapi.com/properties/get-hotel-photos"

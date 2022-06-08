@@ -5,8 +5,10 @@ from telebot.types import CallbackQuery, Message
 from utils.data import set_data, get_data
 from keyboards.inline.keyboard_yes_or_no import keyboards_yes_or_no
 from datetime import datetime, timedelta
+from loguru import logger
 
 
+@logger.catch()
 def __choosing_actions__(user_id: int, chat_id: int) -> tuple:
     """Функция для выдачи слова и начальной даты для календаря в зависимости от состояния пользователя
     (для удобства написания кода)"""
@@ -19,12 +21,14 @@ def __choosing_actions__(user_id: int, chat_id: int) -> tuple:
     return text, new_date
 
 
+@logger.catch()
 def start_calendar(user_id: int, chat_id: int) -> None:
     """Начало процедуры ввода даты"""
     bot.set_state(user_id, UserState.check_In, chat_id)
     start_input_data_in_calendar(user_id, chat_id)
 
 
+@logger.catch()
 def start_input_data_in_calendar(user_id: int, chat_id: int) -> None:
     """Функция для запуска календаря
     Сделана раздельно с началом процедуры ввода дат (start_calendar), т.к. используется несколько раз в разных
@@ -35,6 +39,7 @@ def start_input_data_in_calendar(user_id: int, chat_id: int) -> None:
 
 
 @bot.callback_query_handler(func=DetailedTelegramCalendar.func())
+@logger.catch()
 def input_data_in_calendar(call: CallbackQuery) -> None:
     """Функция для продолжения работы календаря
     Запускается, при нажатии кнопок в календаре и завершает работе при выборе конечной даты"""
@@ -59,6 +64,7 @@ def input_data_in_calendar(call: CallbackQuery) -> None:
     func=lambda call:
     bot.get_state(call.from_user.id, call.message.chat.id) in ('UserState:check_Out', 'UserState:check_In')
     )
+@logger.catch()
 def confirmation_date(call: CallbackQuery) -> None:
     """Функция для выполнения действий после подтверждения (или нет) даты"""
     from handlers.special_heandlers.quantity_hotels import start_quantity_hotels
@@ -82,6 +88,7 @@ def confirmation_date(call: CallbackQuery) -> None:
 
 
 @bot.message_handler(state=[UserState.check_In, UserState.check_Out])
+@logger.catch()
 def error_input_date(message: Message) -> None:
     """Функция для оповещения пользователя о неверных действиях"""
     bot.send_message(message.chat.id, 'При выборе даты, ввод осуществляется только через кнопки в самом сообщении!\n'

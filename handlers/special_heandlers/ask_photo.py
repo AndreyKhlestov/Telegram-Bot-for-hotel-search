@@ -5,8 +5,10 @@ from utils.data import set_data
 from keyboards.inline.keyboard_yes_or_no import keyboards_yes_or_no
 from keyboards.reply.default_reply_keyboard import reply_keyboards
 from handlers.special_heandlers.send_inf_hotel import send_hotel_inf
+from loguru import logger
 
 
+@logger.catch()
 def ask_photo(user_id: int, chat_id: int) -> None:
     """Начало процедуры вопроса о выводе фото отелей"""
     bot.set_state(user_id, UserState.ask_photo, chat_id)
@@ -16,6 +18,7 @@ def ask_photo(user_id: int, chat_id: int) -> None:
 
 @bot.callback_query_handler(func=lambda call:
                             bot.get_state(call.from_user.id, call.message.chat.id) == 'UserState:ask_photo')
+@logger.catch()
 def confirmation_date(call: CallbackQuery) -> None:
     """Функция для обработки ответа пользователя (да/нет - через кнопку) на вопрос о выводе фото"""
     set_data(call.from_user.id, call.message.chat.id, 'print_photo', call.data)
@@ -32,6 +35,7 @@ def confirmation_date(call: CallbackQuery) -> None:
 
 
 @bot.message_handler(state=UserState.quantity_photo)
+@logger.catch()
 def quantity_photo(message: Message) -> None:
     """Функция для выполнения действий после ввода пользователем количества фото"""
     if message.text.isdigit():

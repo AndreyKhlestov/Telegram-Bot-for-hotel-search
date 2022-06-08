@@ -5,8 +5,10 @@ from utils.search_city import search_city
 from utils.data import set_data, get_data
 from keyboards.inline.default_inline_keyboards import inline_keyboards
 from handlers.special_heandlers.price_min import start_prise_min
+from loguru import logger
 
 
+@logger.catch()
 def start_search_city(user_id: int, chat_id: int) -> None:
     """Начало процедуры поиска города"""
     bot.set_state(user_id, UserState.search_city, chat_id)
@@ -14,6 +16,7 @@ def start_search_city(user_id: int, chat_id: int) -> None:
 
 
 @bot.message_handler(state=UserState.search_city)
+@logger.catch()
 def processing_city(message: Message) -> None:
     """Функция для поиска города, введенного пользователем через клавиатуру"""
     name_city = message.text.capitalize()
@@ -29,6 +32,7 @@ def processing_city(message: Message) -> None:
 
 @bot.callback_query_handler(func=lambda call:
                             bot.get_state(call.from_user.id, call.message.chat.id) == 'UserState:search_city')
+@logger.catch()
 def correction_city(call: CallbackQuery) -> None:
     """
     Функция для выполнения действий после уточнения города (через Inline клавиатуру).

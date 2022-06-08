@@ -3,8 +3,10 @@ from states.user_states import UserState
 from telebot.types import Message, ReplyKeyboardRemove
 from utils.data import set_data
 from keyboards.reply.default_reply_keyboard import reply_keyboards
+from loguru import logger
 
 
+@logger.catch()
 def start_quantity_hotels(user_id: int, chat_id: int) -> None:
     """Начало процедуры ввода количество отелей, которые необходимо вывести в результате"""
     bot.set_state(user_id, UserState.quantity_hotels, chat_id)
@@ -13,6 +15,7 @@ def start_quantity_hotels(user_id: int, chat_id: int) -> None:
 
 
 @bot.message_handler(state=UserState.quantity_hotels)
+@logger.catch()
 def quantity_hotels(message: Message) -> None:
     """Функция для выполнения действий после ввода пользователем количества отелей"""
     from handlers.special_heandlers.confirm import confirm

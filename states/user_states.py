@@ -2,6 +2,7 @@ from telebot.handler_backends import State, StatesGroup
 
 
 class UserState(StatesGroup):
+    start_command = State()
     search_city = State()
     price_min = State()
     price_max = State()

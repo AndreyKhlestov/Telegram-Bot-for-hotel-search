@@ -2,8 +2,10 @@ from utils.request_to_api import request_to_api
 from config_data import config
 import re
 import json
+from loguru import logger
 
 
+@logger.catch()
 def edit_text(text: str) -> str:
     """Функция для редактирования данных (из 'caption') в читаемы вид"""
     text = re.sub("<span class='highlighted'>", '', text)
@@ -19,6 +21,7 @@ def edit_text(text: str) -> str:
     return text
 
 
+@logger.catch()
 def search_city(city: str) -> tuple or None:
     """Функция для поиска города.
     Все найденные данные сохраняет в словарь (где ключ - 'destinationId', значение - расположение (данные из "caption"))

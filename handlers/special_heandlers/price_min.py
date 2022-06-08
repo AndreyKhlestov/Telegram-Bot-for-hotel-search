@@ -4,8 +4,10 @@ from loader import bot
 from utils.data import set_data
 from keyboards.reply.default_reply_keyboard import reply_keyboards
 from handlers.special_heandlers.price_max import start_price_max
+from loguru import logger
 
 
+@logger.catch()
 def start_prise_min(user_id: int, chat_id: int) -> None:
     """Начало процедуры уточнения желаемой минимальной цены"""
     bot.set_state(user_id, UserState.price_min, chat_id)
@@ -14,6 +16,7 @@ def start_prise_min(user_id: int, chat_id: int) -> None:
 
 
 @bot.message_handler(state=UserState.price_min)
+@logger.catch()
 def set_price_min(message: Message) -> None:
     """Функция для проверки и сохранения минимальной цены"""
     if message.text.isdigit():
