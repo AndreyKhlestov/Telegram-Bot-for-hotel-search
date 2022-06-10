@@ -3,6 +3,9 @@ from utils.request_to_api import request_to_api
 from utils.data import get_data
 from config_data import config
 from loguru import logger
+from loader import bot
+from handlers.special_heandlers.finish_work import finish_work
+import requests
 import re
 import json
 
@@ -27,42 +30,50 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> Tuple[str,
         sort_order = "DISTANCE_FROM_LANDMARK"
         querystring["priceMin"] = get_data(user_id, chat_id, 'price_min')
         querystring["priceMax"] = get_data(user_id, chat_id, 'price_max')
+
     elif get_data(user_id, chat_id, 'commands') == "lowprice":
         sort_order = "PRICE"
+
     else:
         sort_order = "PRICE_HIGHEST_FIRST"
     querystring["sortOrder"] = sort_order
 
     url = "https://hotels4.p.rapidapi.com/properties/list"
+    try:
+        response = request_to_api(url, querystring)  # ответ на запрос
 
-    response = request_to_api(url, querystring)  # ответ на запрос
-    pattern = r'(?<="results":).+?(?=,"pagination")'
-    find = re.search(pattern, response.text)
+    except requests.exceptions.ConnectTimeout:
+        bot.send_message(user_id, 'К сожалению, сервер не отвечает. Попробуйте позже.')
+        finish_work(user_id, chat_id)
 
-    if find:
-        data = json.loads(find[0])  # преобразуем в JSON формат
-
-        if data:  # Если что-то нашел (результат поиска есть)
-            for i_data in data:
-                id_hotel = i_data["id"]
-                price = int(i_data["ratePlan"]["price"]["exactCurrent"])
-                text = 'Название отеля: {name_hotel}\n' \
-                       'Адрес: {street_Address}\n' \
-                       'Расстояние до центра города: {distance}\n' \
-                       'Стоимость за ночь: {price} руб\n' \
-                       'Общая стоимость: {total_price} руб\n' \
-                       'Ссылка: {url}'\
-                    .format(
-                        name_hotel=i_data["name"],
-                        street_Address=i_data["address"]["streetAddress"],
-                        distance=i_data["landmarks"][0]["distance"],
-                        price=price,
-                        total_price=price * num_days,
-                        url="https://www.hotels.com/ho" + str(id_hotel)
-                        )
-
-                yield text, id_hotel
-        else:
-            return None
     else:
-        raise Exception('В ответе (на запрос "отелей") нет нужного ключа')
+        pattern = r'(?<="results":).+?(?=,"pagination")'
+        find = re.search(pattern, response.text)
+
+        if find:
+            data = json.loads(find[0])  # преобразуем в JSON формат
+
+            if data:  # Если что-то нашел (результат поиска есть)
+                for i_data in data:
+                    id_hotel = i_data["id"]
+                    price = int(i_data["ratePlan"]["price"]["exactCurrent"])
+                    text = 'Название отеля: {name_hotel}\n' \
+                           'Адрес: {street_Address}\n' \
+                           'Расстояние до центра города: {distance}\n' \
+                           'Стоимость за ночь: {price} руб\n' \
+                           'Общая стоимость: {total_price} руб\n' \
+                           'Ссылка: {url}'\
+                        .format(
+                            name_hotel=i_data["name"],
+                            street_Address=i_data["address"]["streetAddress"],
+                            distance=i_data["landmarks"][0]["distance"],
+                            price=price,
+                            total_price=price * num_days,
+                            url="https://www.hotels.com/ho" + str(id_hotel)
+                            )
+
+                    yield text, id_hotel
+            else:
+                return None
+        else:
+            raise KeyError('В ответе (на запрос "отелей") нет нужного ключа')

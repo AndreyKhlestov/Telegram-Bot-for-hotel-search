@@ -6,6 +6,8 @@ from utils.data import set_data, get_data
 from keyboards.inline.default_inline_keyboards import inline_keyboards
 from handlers.special_heandlers.price_min import start_prise_min
 from loguru import logger
+from handlers.special_heandlers.finish_work import finish_work
+import requests
 
 
 @logger.catch()
@@ -20,14 +22,18 @@ def start_search_city(user_id: int, chat_id: int) -> None:
 def processing_city(message: Message) -> None:
     """Функция для поиска города, введенного пользователем через клавиатуру"""
     name_city = message.text.capitalize()
-    if search_city(name_city):
-        found_cities_dict = search_city(name_city)
-        keyboards = inline_keyboards(found_cities_dict)
-        bot.send_message(message.from_user.id, 'Пожалуйста, выберите из списка нужный вам город или введите правильное '
-                                               'название города (если его нет в списке)',
-                         reply_markup=keyboards)  # Отправляем кнопки с вариантами
-    else:  # Если поиск ничего не выдал
-        bot.send_message(message.from_user.id, f'Город {name_city} не найден.\nВведите правильное название города:')
+    try:
+        if search_city(name_city):
+            found_cities_dict = search_city(name_city)
+            keyboards = inline_keyboards(found_cities_dict)
+            bot.send_message(message.from_user.id, 'Пожалуйста, выберите из списка нужный вам город или введите '
+                                                   'правильное название города (если его нет в списке)',
+                             reply_markup=keyboards)  # Отправляем кнопки с вариантами
+        else:  # Если поиск ничего не выдал
+            bot.send_message(message.from_user.id, f'Город {name_city} не найден.\nВведите правильное название города:')
+    except requests.exceptions.ConnectTimeout:
+        bot.send_message(message.from_user.id, 'К сожалению, сервер не отвечает. Попробуйте позже.')
+        finish_work(message.from_user.id, message.chat.id)
 
 
 @bot.callback_query_handler(func=lambda call:

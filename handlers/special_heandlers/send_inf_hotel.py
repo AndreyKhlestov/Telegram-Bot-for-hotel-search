@@ -4,6 +4,8 @@ from utils.data import get_data
 from utils.search_hotel import search_hotel
 from utils.get_photo import get_photos
 from loguru import logger
+from telebot.apihelper import ApiTelegramException
+import requests
 import re
 
 
@@ -30,6 +32,9 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
                     count_hotel += 1
                     if count_hotel >= num_hotels:
                         break
+                    elif dis > dis_max:
+                        count_hotel = num_hotels
+
     else:
         for text, id_hotel in search_hotel(user_id, chat_id):
             send_hotel_inf(user_id, chat_id, text, id_hotel)
@@ -40,10 +45,22 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
 def send_hotel_inf(user_id: int, chat_id: int, text: str, id_hotel: str):
     """Функция для отправки информации об найденных отелях"""
     quantity_photo = get_data(user_id, chat_id, 'num_photo')  # Количество фото для вывода (str или None)
-    if quantity_photo:
-        list_url_photo = get_photos(id_hotel, quantity_photo)
-        if int(quantity_photo) == 1:
-            bot.send_photo(chat_id, list_url_photo[0].media)
-        else:
-            bot.send_media_group(chat_id, list_url_photo)
-    bot.send_message(user_id, text)
+
+    try:
+        if quantity_photo:
+            list_url_photo = get_photos(id_hotel, quantity_photo)
+            if list_url_photo == None:
+                bot.send_message(user_id, "К сожалению, у отеля нет фото")
+            elif int(quantity_photo) == 1:
+                bot.send_photo(chat_id, list_url_photo[0].media)
+            else:
+                bot.send_media_group(chat_id, list_url_photo[:int(quantity_photo)])
+    except (KeyError, requests.exceptions.ConnectTimeout, ApiTelegramException):
+    # except ApiTelegramException:
+        bot.send_message(user_id, "К сожалению, не удалось загрузить фото. Но их можно посмотреть на сайте перейдя по "
+                                  "ссылке")
+    except:
+        bot.send_message(user_id, "Что-то пошло не так в модуле 'send_hotel_inf'")
+
+    finally:
+         bot.send_message(user_id, text)
