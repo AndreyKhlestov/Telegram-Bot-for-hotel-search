@@ -56,7 +56,6 @@ def send_hotel_inf(user_id: int, chat_id: int, text: str, id_hotel: str):
             else:
                 bot.send_media_group(chat_id, list_url_photo[:int(quantity_photo)])
     except (KeyError, requests.exceptions.ConnectTimeout, ApiTelegramException):
-    # except ApiTelegramException:
         bot.send_message(user_id, "К сожалению, не удалось загрузить фото. Но их можно посмотреть на сайте перейдя по "
                                   "ссылке")
     except:
