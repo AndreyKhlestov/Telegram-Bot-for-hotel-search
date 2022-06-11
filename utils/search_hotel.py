@@ -56,6 +56,7 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> Tuple[str,
             if data:  # Если что-то нашел (результат поиска есть)
                 for i_data in data:
                     id_hotel = i_data["id"]
+
                     price = int(i_data["ratePlan"]["price"]["exactCurrent"])
                     text = 'Название отеля: {name_hotel}\n' \
                            'Адрес: {street_Address}\n' \
@@ -65,7 +66,7 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> Tuple[str,
                            'Ссылка: {url}'\
                         .format(
                             name_hotel=i_data["name"],
-                            street_Address=i_data["address"]["streetAddress"],
+                            street_Address=i_data["address"]["streetAddress"] if "streetAddress" in i_data["address"].keys() else '-',
                             distance=i_data["landmarks"][0]["distance"],
                             price=price,
                             total_price=price * num_days,

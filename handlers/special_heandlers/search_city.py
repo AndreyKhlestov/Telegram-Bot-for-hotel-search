@@ -23,15 +23,15 @@ def processing_city(message: Message) -> None:
     """Функция для поиска города, введенного пользователем через клавиатуру"""
     name_city = message.text.capitalize()
     try:
-        if search_city(name_city):
-            found_cities_dict = search_city(name_city)
+        found_cities_dict = search_city(name_city)
+        if found_cities_dict:
             keyboards = inline_keyboards(found_cities_dict)
             bot.send_message(message.from_user.id, 'Пожалуйста, выберите из списка нужный вам город или введите '
                                                    'правильное название города (если его нет в списке)',
                              reply_markup=keyboards)  # Отправляем кнопки с вариантами
         else:  # Если поиск ничего не выдал
             bot.send_message(message.from_user.id, f'Город {name_city} не найден.\nВведите правильное название города:')
-    except requests.exceptions.ConnectTimeout:
+    except (requests.exceptions.ConnectTimeout, requests.ConnectionError):
         bot.send_message(message.from_user.id, 'К сожалению, сервер не отвечает. Попробуйте позже.')
         finish_work(message.from_user.id, message.chat.id)
 

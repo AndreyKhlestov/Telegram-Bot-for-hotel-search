@@ -35,5 +35,6 @@ def get_photos(id_hotel: str, quantity_photo: str):
         else:
             return None
     else:
-        raise KeyError('В ответе (на запрос "фото отелей") нет нужного ключа')
+        return None
+        # raise KeyError('В ответе (на запрос "фото отелей") нет нужного ключа')
 

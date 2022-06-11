@@ -17,6 +17,8 @@ def request_to_api(url: str, querystring: dict) -> Response:
         response = requests.request("GET", url, headers=headers, params=querystring, timeout=10)
         if response.status_code == requests.codes.ok:  # проверка статус кода ответа
             return response
+        elif response.status_code == 429:
+            raise requests.exceptions.ConnectionError('Превышена ежемесячная квота запросов')
     else:
         raise requests.exceptions.ConnectTimeout('Статус кода запроса не положительный')
     # except requests.exceptions.ConnectTimeout:

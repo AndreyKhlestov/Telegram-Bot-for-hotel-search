@@ -6,6 +6,7 @@ from utils.get_photo import get_photos
 from loguru import logger
 from telebot.apihelper import ApiTelegramException
 import requests
+import time
 import re
 
 
@@ -60,6 +61,6 @@ def send_hotel_inf(user_id: int, chat_id: int, text: str, id_hotel: str):
                                   "ссылке")
     except:
         bot.send_message(user_id, "Что-то пошло не так в модуле 'send_hotel_inf'")
-
     finally:
-         bot.send_message(user_id, text)
+        time.sleep(1)
+        bot.send_message(user_id, text)

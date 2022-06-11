@@ -1,3 +1,5 @@
+import requests
+
 from utils.request_to_api import request_to_api
 from config_data import config
 import re
@@ -30,6 +32,8 @@ def search_city(city: str) -> tuple or None:
     url = "https://hotels4.p.rapidapi.com/locations/v2/search"
     querystring = {"query": name_city, "locale": config.LOCALE, "currency": config.CURRENCY}
     response = request_to_api(url, querystring)  # ответ на запрос
+    if not response:
+        raise requests.ConnectionError
 
     # проверка в тексте ответа регулярным выражением (на случай, если не будет ключа)
     pattern = r'(?<="CITY_GROUP","entities":).+?[\]]'
@@ -45,4 +49,4 @@ def search_city(city: str) -> tuple or None:
         else:
             return None
     else:
-        raise Exception('В ответе (на запрос "города") нет нужного ключа')
+        raise KeyError('В ответе (на запрос "города") нет нужного ключа')
