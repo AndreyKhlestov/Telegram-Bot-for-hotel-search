@@ -2,6 +2,7 @@ import requests
 from requests import Response
 from config_data import config
 from loguru import logger
+import time
 
 
 @logger.catch()
@@ -19,6 +20,7 @@ def request_to_api(url: str, querystring: dict) -> Response:
             return response
         elif response.status_code == 429:
             raise requests.exceptions.ConnectionError('Превышена ежемесячная квота запросов')
+        time.sleep(1)
     else:
         raise requests.exceptions.ConnectTimeout('Статус кода запроса не положительный')
     # except requests.exceptions.ConnectTimeout:

@@ -33,8 +33,9 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
                     count_hotel += 1
                     if count_hotel >= num_hotels:
                         break
-                    elif dis > dis_max:
-                        count_hotel = num_hotels
+                if dis > dis_max:
+                    count_hotel = num_hotels
+                    break
 
     else:
         for text, id_hotel in search_hotel(user_id, chat_id):
@@ -62,5 +63,5 @@ def send_hotel_inf(user_id: int, chat_id: int, text: str, id_hotel: str):
     except:
         bot.send_message(user_id, "Что-то пошло не так в модуле 'send_hotel_inf'")
     finally:
-        time.sleep(1)
+        time.sleep(1.5)
         bot.send_message(user_id, text)
