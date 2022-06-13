@@ -6,6 +6,7 @@ from utils.data import set_data, get_data
 from keyboards.inline.keyboard_yes_or_no import keyboards_yes_or_no
 from datetime import datetime, timedelta
 from loguru import logger
+from handlers.special_heandlers.quantity_hotels import start_quantity_hotels
 
 
 @logger.catch()
@@ -67,7 +68,7 @@ def input_data_in_calendar(call: CallbackQuery) -> None:
 @logger.catch()
 def confirmation_date(call: CallbackQuery) -> None:
     """Функция для выполнения действий после подтверждения (или нет) даты"""
-    from handlers.special_heandlers.quantity_hotels import start_quantity_hotels
+
     if call.data == 'Да':
         result = get_data(call.from_user.id, call.message.chat.id, 'cache')
         text = __choosing_actions__(call.from_user.id, call.message.chat.id)[0]

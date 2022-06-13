@@ -5,6 +5,7 @@ from utils.data import get_data
 from keyboards.inline.keyboard_yes_or_no import keyboards_yes_or_no
 import re
 from loguru import logger
+from handlers.special_heandlers.ask_photo import ask_photo
 
 
 @logger.catch()
@@ -38,7 +39,6 @@ def confirm(user_id: int, chat_id: int) -> None:
 def confirmation_date(call: CallbackQuery) -> None:
     """Функция для обработки ответа пользователя (да/нет - через кнопку) при уточнении данных"""
     from handlers.special_heandlers.search_city import start_search_city
-    from handlers.special_heandlers.ask_photo import ask_photo
     if call.data == 'Да':
         text = re.sub(r"Верны ли данные\?\n", '', call.message.text)
         bot.edit_message_text(text,

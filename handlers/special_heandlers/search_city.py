@@ -8,6 +8,7 @@ from handlers.special_heandlers.price_min import start_prise_min
 from loguru import logger
 from handlers.special_heandlers.finish_work import finish_work
 import requests
+from handlers.special_heandlers.date_check_In_and_check_Out import start_calendar
 
 
 @logger.catch()
@@ -44,7 +45,7 @@ def correction_city(call: CallbackQuery) -> None:
     Функция для выполнения действий после уточнения города (через Inline клавиатуру).
     При выборе города из найденных городов, ф-я получает id-города, сохраняет его и запускает сценарий поиска отелей
     """
-    from handlers.special_heandlers.date_check_In_and_check_Out import start_calendar
+
     # Получаем название локации (города), который выбрал пользователь через кнопку
     for button in call.message.reply_markup.keyboard:
         if button[0].callback_data == call.data:
