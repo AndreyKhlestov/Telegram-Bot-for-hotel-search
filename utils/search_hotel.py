@@ -11,7 +11,7 @@ import json
 
 
 @logger.catch()
-def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> Tuple[str, int]:
+def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> list or None:
     date_check_in = get_data(user_id, chat_id, 'check_In')
     date_check_out = get_data(user_id, chat_id, 'check_Out')
     num_days = date_check_out - date_check_in
@@ -52,20 +52,22 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> Tuple[str,
 
         if find:
             data = json.loads(find[0])  # преобразуем в JSON формат
-
             if data:  # Если что-то нашел (результат поиска есть)
+                inf_hotel = list()
                 for i_data in data:
                     id_hotel = i_data["id"]
 
                     price = int(i_data["ratePlan"]["price"]["exactCurrent"])
-                    text = 'Название отеля: {name_hotel}\n' \
-                           'Адрес: {street_Address}\n' \
-                           'Расстояние до центра города: {distance}\n' \
-                           'Стоимость за ночь: {price} руб\n' \
-                           'Общая стоимость: {total_price} руб\n' \
-                           'Ссылка: {url}'\
+                    text = '🏨 Название отеля: {name_hotel}\n\n' \
+                           '⭐ Рейтинг: {rating}\n\n' \
+                           '🗺 Адрес: {street_Address}\n\n' \
+                           '🚗 Расстояние до центра города: {distance}\n\n' \
+                           '💵 Стоимость за ночь: {price} руб\n\n' \
+                           '💰 Общая стоимость: {total_price} руб\n\n' \
+                           '🌐 Ссылка: {url}'\
                         .format(
                             name_hotel=i_data["name"],
+                            rating=i_data["guestReviews"]["rating"] if "guestReviews" in i_data.keys() else '-',
                             street_Address=i_data["address"]["streetAddress"] if "streetAddress" in i_data["address"].keys() else '-',
                             distance=i_data["landmarks"][0]["distance"],
                             price=price,
@@ -73,8 +75,9 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> Tuple[str,
                             url="https://www.hotels.com/ho" + str(id_hotel)
                             )
 
-                    yield text, id_hotel
+                    inf_hotel.append((text, id_hotel))
+                return inf_hotel
             else:
                 return None
-        else:
-            raise KeyError('В ответе (на запрос "отелей") нет нужного ключа')
+        else:  # В ответе (на запрос "отелей") нет нужного ключа (т.к. ничего не нашел)
+            return None

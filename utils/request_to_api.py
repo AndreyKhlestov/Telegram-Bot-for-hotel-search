@@ -7,7 +7,7 @@ import time
 
 @logger.catch()
 def request_to_api(url: str, querystring: dict) -> Response:
-    """Универсальная функция для запросов к API"""
+    """Универсальная функция для запросов к rapidapi.com через API"""
     # try:
     headers = {
         "X-RapidAPI-Host": "hotels4.p.rapidapi.com",
@@ -23,5 +23,3 @@ def request_to_api(url: str, querystring: dict) -> Response:
         time.sleep(1)
     else:
         raise requests.exceptions.ConnectTimeout('Статус кода запроса не положительный')
-    # except requests.exceptions.ConnectTimeout:
-    #     raise Exception('Статус кода запроса не положительный')
