@@ -2,6 +2,9 @@ from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, C
 
 
 def inline_keyboards(data: list or dict) -> InlineKeyboardMarkup:
+    """Универсальная inline клавиатура
+    Получает список или словарь и возвращает inline клавиатуру, в которой текст кнопок и возвращаемое значение берется
+    из полученного списка или словаря"""
     keyboards = InlineKeyboardMarkup()
     for i_key in data:
         keyboards.add(InlineKeyboardButton(

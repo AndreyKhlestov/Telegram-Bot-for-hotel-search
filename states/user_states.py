@@ -1,7 +1,7 @@
 from telebot.handler_backends import State, StatesGroup
 
 
-class UserState(StatesGroup):
+class UserState(StatesGroup):  # Состояния пользователя
     start_command = State()
     search_city = State()
     price_min = State()

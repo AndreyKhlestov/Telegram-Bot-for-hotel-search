@@ -5,6 +5,12 @@ db = SqliteDatabase('database/database.db')
 
 
 class User(Model):
+    """Класс для работы с базой данных
+    user_id - id пользователя
+    command - команда пользователя
+    time - время вывода информации
+    date - дата вывода информации
+    name_hotels - названия отелей, которые были выведены пользователю"""
     user_id = CharField()
     command = CharField()
     time = DateTimeField(default=datetime.datetime.now().strftime('%H:%M:%S'))
@@ -12,4 +18,4 @@ class User(Model):
     name_hotels = CharField()
 
     class Meta:
-        database = db  # модель будет использовать базу данных 'people.db'
+        database = db

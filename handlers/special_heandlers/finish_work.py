@@ -8,4 +8,3 @@ from telebot.types import ReplyKeyboardRemove
 def finish_work(user_id: int, chat_id: int) -> None:
     bot.set_state(user_id, UserState.finish, chat_id)
     bot.send_message(user_id, 'Закончил выполнение команды', reply_markup=ReplyKeyboardRemove())
-    # Удаление клавиатуры прописал на будущее. если реализую команду \cd, то нужно будет.

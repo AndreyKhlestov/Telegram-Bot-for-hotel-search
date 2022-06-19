@@ -2,6 +2,7 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 def keyboards_yes_or_no() -> InlineKeyboardMarkup:
+    """inline клавиатура с кнопками 'Да' и 'Нет' """
     keyboards = InlineKeyboardMarkup()
     button_yes = InlineKeyboardButton(
         text='Да',

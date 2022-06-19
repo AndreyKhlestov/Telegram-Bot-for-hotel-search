@@ -5,6 +5,7 @@ from loguru import logger
 
 @logger.catch()
 def set_default_commands(bot):
+    """Функция для добавления в меню бота команд"""
     bot.set_my_commands(
         [BotCommand(*i) for i in DEFAULT_COMMANDS]
     )

@@ -15,7 +15,6 @@ from database.User import User
 @logger.catch()
 def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
     """Начало процедуры отправки информации об найденных отелях"""
-    # bot.send_message(user_id, 'Вот, что я нашел:')
     name_hotels = list()
     pattern_name_hotel = r'(?<=Название отеля: ).+?(?=\n)'
     if get_data(user_id, chat_id, 'commands') == "bestdeal":
