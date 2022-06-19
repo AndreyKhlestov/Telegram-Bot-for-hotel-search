@@ -1,4 +1,4 @@
-from utils.request_to_api import request_to_api
+from rapid_api.request_to_api import request_to_api
 import re
 import json
 from telebot.types import InputMediaPhoto

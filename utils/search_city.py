@@ -1,6 +1,6 @@
 import requests
 
-from utils.request_to_api import request_to_api
+from rapid_api.request_to_api import request_to_api
 from config_data import config
 import re
 import json

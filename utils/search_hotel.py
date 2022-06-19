@@ -1,5 +1,4 @@
-from typing import Tuple
-from utils.request_to_api import request_to_api
+from rapid_api.request_to_api import request_to_api
 from utils.data import get_data
 from config_data import config
 from loguru import logger
