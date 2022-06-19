@@ -9,13 +9,15 @@ from handlers.special_heandlers.finish_work import finish_work
 import requests
 import time
 import re
+from database.User import User
 
 
 @logger.catch()
 def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
     """Начало процедуры отправки информации об найденных отелях"""
     # bot.send_message(user_id, 'Вот, что я нашел:')
-
+    name_hotels = list()
+    pattern_name_hotel = r'(?<=Название отеля: ).+?(?=\n)'
     if get_data(user_id, chat_id, 'commands') == "bestdeal":
         count_hotel = 0
         page_number = 0
@@ -33,6 +35,7 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
                 for text, id_hotel in inf_hotels:
                     dis = float(re.search(pattern, text)[0].replace(',', '.'))  # получаем расстояние до центра города
                     if dis_min <= dis <= dis_max:  # Если расстояние входит в промежуток введенный пользователем
+                        name_hotels.append(re.search(pattern_name_hotel, text)[0])
                         send_hotel_inf(user_id, chat_id, text, id_hotel)
                         count_hotel += 1
                         if count_hotel >= num_hotels:
@@ -53,10 +56,11 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
         inf_hotels = search_hotel(user_id, chat_id)
         if inf_hotels:
             for text, id_hotel in inf_hotels:
+                name_hotels.append(re.search(pattern_name_hotel, text)[0])
                 send_hotel_inf(user_id, chat_id, text, id_hotel)
         else:
             bot.send_message(user_id, 'К сожалению, нет отелей подходящих по заданным критериям')
-
+    User.create(user_id=user_id, command=get_data(user_id, chat_id, 'commands'), name_hotels=',\n'.join(name_hotels))
     finish_work(user_id, chat_id)
 
 
@@ -80,5 +84,6 @@ def send_hotel_inf(user_id: int, chat_id: int, text: str, id_hotel: str):
     except:
         bot.send_message(user_id, "Что-то пошло не так")
     finally:
+
         time.sleep(1.1)
         bot.send_message(user_id, text)
