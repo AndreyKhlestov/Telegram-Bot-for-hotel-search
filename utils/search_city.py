@@ -26,7 +26,8 @@ def edit_text(text: str) -> str:
 def search_city(city: str) -> tuple or None:
     """Функция для поиска города.
     Все найденные данные сохраняет в словарь (где ключ - 'destinationId', значение - расположение (данные из "caption"))
-    и возвращет его"""
+    и возвращает его"""
+    logger.info('Запрос города')
     name_city = city
     url = "https://hotels4.p.rapidapi.com/locations/v2/search"
     querystring = {"query": name_city, "locale": config.LOCALE, "currency": config.CURRENCY}

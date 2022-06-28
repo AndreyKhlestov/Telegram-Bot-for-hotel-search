@@ -6,5 +6,6 @@ from telebot.types import ReplyKeyboardRemove
 
 @logger.catch()
 def finish_work(user_id: int, chat_id: int) -> None:
+    logger.info('Завершение выполнение команды')
     bot.set_state(user_id, UserState.finish, chat_id)
-    bot.send_message(user_id, 'Закончил выполнение команды', reply_markup=ReplyKeyboardRemove())
+    bot.send_message(user_id, 'Закончил выполнение команды')

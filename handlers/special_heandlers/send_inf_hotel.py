@@ -15,6 +15,7 @@ from database.User import User
 @logger.catch()
 def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
     """Начало процедуры отправки информации об найденных отелях"""
+    logger.info('Начало процедуры отправки информации об найденных отелях')
     name_hotels = list()
     pattern_name_hotel = r'(?<=Название отеля: ).+?(?=\n)'
     if get_data(user_id, chat_id, 'commands') == "bestdeal":
@@ -29,7 +30,17 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
         # сколько отелей попало в промежуток, а если одного запроса не хватило, то запрашиваем следующую страницу отелей
         while count_hotel < num_hotels:
             page_number += 1
+            #Отправка текста и стикера поиска
+            message_with_stic = bot.send_message(user_id, 'Веду поиск отелей')
+            sticker = bot.send_sticker(chat_id,
+                                       'CAACAgIAAxkBAAEFJudiu0z--ent9HLJbsxM7S9nAQjK1QACIwADKA9qFCdRJeeMIKQGKQQ')
+
             inf_hotels = search_hotel(user_id, chat_id, page_number)
+
+            # Удаление текста и стикера поиска
+            bot.delete_message(message_with_stic.chat.id, message_with_stic.id)
+            bot.delete_message(sticker.chat.id, sticker.id)
+
             if inf_hotels:
                 for text, id_hotel in inf_hotels:
                     dis = float(re.search(pattern, text)[0].replace(',', '.'))  # получаем расстояние до центра города
@@ -46,42 +57,52 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
                         break
             else:
                 if count_hotel > 0:
-                    bot.send_message(user_id, 'К сожалению, больше нет отелей подходящих по заданным критериям')
+                    bot.send_message(user_id, '⚠ К сожалению, больше нет отелей подходящих по заданным критериям')
                 else:
-                    bot.send_message(user_id, 'К сожалению, нет отелей подходящих по заданным критериям')
+                    bot.send_message(user_id, '⚠ К сожалению, нет отелей подходящих по заданным критериям')
                 break
 
     else:
+        # Отправка текста и стикера поиска
+        message_with_stic = bot.send_message(user_id, 'Веду поиск отелей')
+        sticker = bot.send_sticker(chat_id, 'CAACAgIAAxkBAAEFJudiu0z--ent9HLJbsxM7S9nAQjK1QACIwADKA9qFCdRJeeMIKQGKQQ')
+
         inf_hotels = search_hotel(user_id, chat_id)
+
+        # Удаление текста и стикера поиска
+        bot.delete_message(message_with_stic.chat.id, message_with_stic.id)
+        bot.delete_message(sticker.chat.id, sticker.id)
+
         if inf_hotels:
             for text, id_hotel in inf_hotels:
                 name_hotels.append(re.search(pattern_name_hotel, text)[0])
                 send_hotel_inf(user_id, chat_id, text, id_hotel)
         else:
-            bot.send_message(user_id, 'К сожалению, нет отелей подходящих по заданным критериям')
-    User.create(user_id=user_id, command=get_data(user_id, chat_id, 'commands'), name_hotels=',\n'.join(name_hotels))
+            bot.send_message(user_id, '❌ К сожалению, нет отелей подходящих по заданным критериям')
+    User.create(user_id=user_id, command=get_data(user_id, chat_id, 'commands'),
+                name_hotels=',\n'.join(name_hotels) if name_hotels else 'Нет')
     finish_work(user_id, chat_id)
 
 
 @logger.catch()
 def send_hotel_inf(user_id: int, chat_id: int, text: str, id_hotel: str):
     """Функция для отправки информации об найденных отелях"""
+    logger.info('Отправка информации об найденных отелях')
     quantity_photo = get_data(user_id, chat_id, 'num_photo')  # Количество фото для вывода (str или None)
 
     try:
         if quantity_photo:
             list_url_photo = get_photos(id_hotel, quantity_photo)
             if list_url_photo == None:
-                bot.send_message(user_id, "К сожалению, у отеля нет фото")
+                bot.send_message(user_id, "⚠ К сожалению, у отеля нет фото")
             elif int(quantity_photo) == 1:
                 bot.send_photo(chat_id, list_url_photo[0].media)
             else:
                 bot.send_media_group(chat_id, list_url_photo[:int(quantity_photo)])
     except (KeyError, requests.exceptions.ConnectTimeout, ApiTelegramException):
-        bot.send_message(user_id, "К сожалению, не удалось загрузить фото. Но их можно посмотреть на сайте перейдя по "
-                                  "ссылке")
-    except:
-        bot.send_message(user_id, "Что-то пошло не так")
+        bot.send_message(user_id, "⚠ К сожалению, не удалось загрузить фото. Но их можно посмотреть на сайте перейдя по"
+                                  " ссылке")
+
     finally:
 
         time.sleep(1.1)

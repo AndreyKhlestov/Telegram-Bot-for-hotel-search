@@ -9,7 +9,7 @@ from loguru import logger
 def get_photos(id_hotel: str, quantity_photo: str) -> list or None:
     """Функция для запроса url фото отелей.
     Возвращает список InputMediaPhoto"""
-
+    logger.info('Запрос фото')
     url = "https://hotels4.p.rapidapi.com/properties/get-hotel-photos"
     querystring = {"id": id_hotel}
 

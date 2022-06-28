@@ -25,6 +25,7 @@ def __choosing_actions__(user_id: int, chat_id: int) -> tuple:
 @logger.catch()
 def start_calendar(user_id: int, chat_id: int) -> None:
     """Начало процедуры ввода даты"""
+    logger.info('Начало процедуры ввода даты')
     bot.set_state(user_id, UserState.check_In, chat_id)
     start_input_data_in_calendar(user_id, chat_id)
 
@@ -34,6 +35,7 @@ def start_input_data_in_calendar(user_id: int, chat_id: int) -> None:
     """Функция для запуска календаря
     Сделана раздельно с началом процедуры ввода дат (start_calendar), т.к. используется несколько раз в разных
     состояниях (ввод въезда и выезда из отеля)"""
+    logger.info('Запуск календаря')
     text, my_date = __choosing_actions__(user_id, chat_id)
     calendar, step = DetailedTelegramCalendar(min_date=my_date, locale='ru').build()
     bot.send_message(user_id, f'Выберете дату {text}', reply_markup=calendar)
@@ -44,6 +46,7 @@ def start_input_data_in_calendar(user_id: int, chat_id: int) -> None:
 def input_data_in_calendar(call: CallbackQuery) -> None:
     """Функция для продолжения работы календаря
     Запускается, при нажатии кнопок в календаре и завершает работе при выборе конечной даты"""
+    logger.info('Выбор даты в календаре')
     text, my_date = __choosing_actions__(call.from_user.id, call.message.chat.id)
     result, key, step = DetailedTelegramCalendar(min_date=my_date, locale='ru').process(call.data)
 
@@ -68,7 +71,7 @@ def input_data_in_calendar(call: CallbackQuery) -> None:
 @logger.catch()
 def confirmation_date(call: CallbackQuery) -> None:
     """Функция для выполнения действий после подтверждения (или нет) даты"""
-
+    logger.info('Подтверждение даты. Обработка ответа (да/нет)')
     if call.data == 'Да':
         result = get_data(call.from_user.id, call.message.chat.id, 'cache')
         text = __choosing_actions__(call.from_user.id, call.message.chat.id)[0]

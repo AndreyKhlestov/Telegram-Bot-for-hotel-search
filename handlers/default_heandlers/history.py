@@ -9,6 +9,7 @@ import time
 @bot.message_handler(commands=['history'])
 @logger.catch()
 def bot_history(message: Message):
+    logger.info('Запущена команда "history"')
     data = User.select().where(User.user_id == message.from_user.id)
     for i_data in data:
         bot.send_message(message.from_user.id, f'✍ Команда: {i_data.command}\n'

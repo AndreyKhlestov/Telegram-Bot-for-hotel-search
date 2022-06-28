@@ -11,6 +11,7 @@ from handlers.special_heandlers.ask_photo import ask_photo
 @logger.catch()
 def confirm(user_id: int, chat_id: int) -> None:
     """Начало процедуры уточнения введенных данных пользователем"""
+    logger.info('Начало процедуры уточнения введенных данных пользователем')
     bot.set_state(user_id, UserState.confirm, chat_id)
 
     if get_data(user_id, chat_id, 'commands') == 'bestdeal':
@@ -38,6 +39,7 @@ def confirm(user_id: int, chat_id: int) -> None:
 @logger.catch()
 def confirmation_date(call: CallbackQuery) -> None:
     """Функция для обработки ответа пользователя (да/нет - через кнопку) при уточнении данных"""
+    logger.info('Обработка ответа пользователя (да/нет) при уточнении данных')
     from handlers.special_heandlers.search_city import start_search_city
     if call.data == 'Да':
         text = re.sub(r"Верны ли данные\?\n", '', call.message.text)

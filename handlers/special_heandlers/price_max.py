@@ -10,6 +10,7 @@ from loguru import logger
 @logger.catch()
 def start_price_max(user_id: int, chat_id: int) -> None:
     """Начало процедуры уточнения желаемой максимальной цены"""
+    logger.info('Начало процедуры уточнения максимальной цены')
     bot.set_state(user_id, UserState.price_max, chat_id)
     min_price = int(get_data(user_id, chat_id, 'price_min'))
     list_num = [str(min_price + num*min_price) for num in [1, 2, 3, 5, 7, 10]]
@@ -21,6 +22,7 @@ def start_price_max(user_id: int, chat_id: int) -> None:
 @logger.catch()
 def set_price_max(message: Message) -> None:
     """Функция для проверки и сохранения максимальной цены"""
+    logger.info('Проверка и сохранение максимальной цены')
     if message.text.isdigit():
         min_price = get_data(message.from_user.id, message.chat.id, 'price_min')
 

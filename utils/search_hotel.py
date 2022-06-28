@@ -13,6 +13,7 @@ import json
 def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> list or None:
     """Функция для запроса отелей и вывода найденной информации в списке про каждый отель отдельно (отредактированный
     текст для отправки пользователю и id отеля (для дальнейшего поиска фото))"""
+    logger.info('Запрос отелей')
     date_check_in = get_data(user_id, chat_id, 'check_In')
     date_check_out = get_data(user_id, chat_id, 'check_Out')
     num_days = date_check_out - date_check_in

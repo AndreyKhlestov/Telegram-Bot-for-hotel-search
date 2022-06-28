@@ -11,6 +11,7 @@ from loguru import logger
 @logger.catch()
 def ask_photo(user_id: int, chat_id: int) -> None:
     """Начало процедуры вопроса о выводе фото отелей"""
+    logger.info('Начало процедуры вопроса о выводе фото отелей')
     bot.set_state(user_id, UserState.ask_photo, chat_id)
     bot.send_message(user_id, f'Выводить фотографии отелей?',
                      reply_markup=keyboards_yes_or_no())
@@ -21,6 +22,7 @@ def ask_photo(user_id: int, chat_id: int) -> None:
 @logger.catch()
 def confirmation_date(call: CallbackQuery) -> None:
     """Функция для обработки ответа пользователя (да/нет - через кнопку) на вопрос о выводе фото"""
+    logger.info('Обработка ответа пользователя (да/нет) на вопрос о выводе фото')
     set_data(call.from_user.id, call.message.chat.id, 'print_photo', call.data)
     if call.data == 'Да':
         bot.delete_message(call.message.chat.id, call.message.id)
@@ -38,6 +40,7 @@ def confirmation_date(call: CallbackQuery) -> None:
 @logger.catch()
 def quantity_photo(message: Message) -> None:
     """Функция для выполнения действий после ввода пользователем количества фото"""
+    logger.info('Обработка ответа после ввода пользователем количества фото')
     if message.text.isdigit():
         if 0 < int(message.text) <= 10:
             set_data(message.from_user.id, message.chat.id, 'num_photo', message.text)

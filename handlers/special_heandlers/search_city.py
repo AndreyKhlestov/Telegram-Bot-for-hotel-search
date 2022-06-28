@@ -14,6 +14,7 @@ from handlers.special_heandlers.date_check_In_and_check_Out import start_calenda
 @logger.catch()
 def start_search_city(user_id: int, chat_id: int) -> None:
     """Начало процедуры поиска города"""
+    logger.info('Начало процедуры поиска города')
     bot.set_state(user_id, UserState.search_city, chat_id)
     bot.send_message(user_id, 'Введите название города:')
 
@@ -22,19 +23,41 @@ def start_search_city(user_id: int, chat_id: int) -> None:
 @logger.catch()
 def processing_city(message: Message) -> None:
     """Функция для поиска города, введенного пользователем через клавиатуру"""
-    name_city = message.text.capitalize()
-    try:
-        found_cities_dict = search_city(name_city)
-        if found_cities_dict:
-            keyboards = inline_keyboards(found_cities_dict)
-            bot.send_message(message.from_user.id, 'Пожалуйста, выберите из списка нужный вам город или введите '
-                                                   'правильное название города (если его нет в списке)',
-                             reply_markup=keyboards)  # Отправляем кнопки с вариантами
-        else:  # Если поиск ничего не выдал
-            bot.send_message(message.from_user.id, f'Город {name_city} не найден.\nВведите правильное название города:')
-    except (requests.exceptions.ConnectTimeout, requests.ConnectionError):
-        bot.send_message(message.from_user.id, 'К сожалению, сервер не отвечает. Попробуйте позже.')
-        finish_work(message.from_user.id, message.chat.id)
+    logger.info('Обработка ответа пользователя - название города')
+
+    if message.text.replace(' ', '').replace('-', '').isalpha():
+        name_city = message.text.capitalize()
+
+        # Отправка текста и стикера поиска
+        message_with_stic = bot.send_message(message.from_user.id, 'Веду поиск города')
+        sticker = bot.send_sticker(message.chat.id,
+                                   'CAACAgIAAxkBAAEFJudiu0z--ent9HLJbsxM7S9nAQjK1QACIwADKA9qFCdRJeeMIKQGKQQ')
+        try:
+            found_cities_dict = search_city(name_city)
+        except (requests.exceptions.ConnectTimeout, requests.ConnectionError):
+            # Удаление текста и стикера поиска
+            bot.delete_message(message_with_stic.chat.id, message_with_stic.id)
+            bot.delete_message(sticker.chat.id, sticker.id)
+            bot.send_message(message.from_user.id, 'К сожалению, сервер не отвечает. Попробуйте позже.')
+            finish_work(message.from_user.id, message.chat.id)
+        else:
+            # Удаление текста и стикера поиска
+            bot.delete_message(message_with_stic.chat.id, message_with_stic.id)
+            bot.delete_message(sticker.chat.id, sticker.id)
+
+            if found_cities_dict:
+                keyboards = inline_keyboards(found_cities_dict)
+                bot.send_message(message.from_user.id, 'Пожалуйста, выберите из списка нужный вам город или введите '
+                                                       'правильное название города (если его нет в списке)',
+                                 reply_markup=keyboards)  # Отправляем кнопки с вариантами
+            else:  # Если поиск ничего не выдал
+                bot.send_message(message.from_user.id, f'❌ Город "{name_city}" не найден.\n'
+                                                       f'Введите правильное название города:')
+
+    else:
+        bot.send_message(message.from_user.id, "❌ Неправильный ввод!\n"
+                                               "Название города должно состоять только из букв и может содержать "
+                                               "пробелы или тире ('-')")
 
 
 @bot.callback_query_handler(func=lambda call:
@@ -45,7 +68,7 @@ def correction_city(call: CallbackQuery) -> None:
     Функция для выполнения действий после уточнения города (через Inline клавиатуру).
     При выборе города из найденных городов, ф-я получает id-города, сохраняет его и запускает сценарий поиска отелей
     """
-
+    logger.info('Обработка ответа пользователя - уточнения города (через Inline клавиатуру)')
     # Получаем название локации (города), который выбрал пользователь через кнопку
     for button in call.message.reply_markup.keyboard:
         if button[0].callback_data == call.data:

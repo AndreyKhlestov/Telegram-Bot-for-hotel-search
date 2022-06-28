@@ -10,6 +10,7 @@ from loguru import logger
 @logger.catch()
 def bot_lowprice(message: Message):
     """Функция для запуска процедуры поиска дешевых отелей"""
+    logger.info('Запущена команда "lowprice"')
     bot.set_state(message.from_user.id, UserState.start_command, message.chat.id)
     set_data(message.from_user.id, message.chat.id, 'commands', 'lowprice')
     start_search_city(message.from_user.id, message.chat.id)
