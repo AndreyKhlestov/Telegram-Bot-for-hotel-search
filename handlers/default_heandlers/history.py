@@ -1,7 +1,7 @@
 from telebot.types import Message
 from loader import bot
 from loguru import logger
-from database.User import *
+from database.models import *
 from handlers.special_heandlers.finish_work import finish_work
 import time
 

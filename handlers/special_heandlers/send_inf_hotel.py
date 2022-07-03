@@ -1,5 +1,4 @@
 from loader import bot
-from states.user_states import UserState
 from utils.data import get_data
 from utils.search_hotel import search_hotel
 from utils.get_photo import get_photos
@@ -9,15 +8,23 @@ from handlers.special_heandlers.finish_work import finish_work
 import requests
 import time
 import re
-from database.User import User
+from database.models import HotelRequest, Hotel
+import datetime
 
 
 @logger.catch()
 def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
     """Начало процедуры отправки информации об найденных отелях"""
     logger.info('Начало процедуры отправки информации об найденных отелях')
-    name_hotels = list()
-    pattern_name_hotel = r'(?<=Название отеля: ).+?(?=\n)'
+
+    # Сохраняем в базу о запросах и одновременно получаем id запроса
+    request_id = HotelRequest.create(user_id=user_id,
+                                     command=get_data(user_id, chat_id, 'commands'),
+                                     location=get_data(user_id, chat_id, 'location'),
+                                     main_info=get_data(user_id, chat_id, 'main_info'),
+                                     date=datetime.datetime.now().strftime('%Y.%m.%d  %H:%M:%S')
+                                     ).id
+
     if get_data(user_id, chat_id, 'commands') == "bestdeal":
         count_hotel = 0
         page_number = 0
@@ -45,22 +52,27 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
                 for text, id_hotel in inf_hotels:
                     dis = float(re.search(pattern, text)[0].replace(',', '.'))  # получаем расстояние до центра города
                     if dis_min <= dis <= dis_max:  # Если расстояние входит в промежуток введенный пользователем
-                        name_hotels.append(re.search(pattern_name_hotel, text)[0])
                         send_hotel_inf(user_id, chat_id, text, id_hotel)
+
+                        # Сохраняем в базу о найденных отелях
+                        Hotel.create(request_id=request_id,
+                                     num_queue=count_hotel,
+                                     hotel_info=text
+                                     )
                         count_hotel += 1
+
                         if count_hotel >= num_hotels:
                             break
-                    if dis > dis_max:
-                        if count_hotel > 0:
-                            bot.send_message(user_id, '')
-                        count_hotel = num_hotels
+                    if dis > dis_max:  # Если расстояние больше максимального
+                        num_hotels = count_hotel
                         break
             else:
-                if count_hotel > 0:
-                    bot.send_message(user_id, '⚠ К сожалению, больше нет отелей подходящих по заданным критериям')
-                else:
-                    bot.send_message(user_id, '⚠ К сожалению, нет отелей подходящих по заданным критериям')
                 break
+
+        if 0 < count_hotel < int(get_data(user_id, chat_id, 'num_hotels')):
+            bot.send_message(user_id, '⚠ К сожалению, больше нет отелей подходящих по заданным критериям')
+        elif count_hotel == 0:
+            bot.send_message(user_id, '⚠ К сожалению, нет отелей подходящих по заданным критериям')
 
     else:
         # Отправка текста и стикера поиска
@@ -74,13 +86,23 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
         bot.delete_message(sticker.chat.id, sticker.id)
 
         if inf_hotels:
-            for text, id_hotel in inf_hotels:
-                name_hotels.append(re.search(pattern_name_hotel, text)[0])
+            for index, inf in enumerate(inf_hotels):
+                text, id_hotel = inf
                 send_hotel_inf(user_id, chat_id, text, id_hotel)
+
+                # Сохраняем в базу о найденных отелях
+                Hotel.create(request_id=request_id,
+                             num_queue=index,
+                             hotel_info=text
+                             )
         else:
             bot.send_message(user_id, '❌ К сожалению, нет отелей подходящих по заданным критериям')
-    User.create(user_id=user_id, command=get_data(user_id, chat_id, 'commands'),
-                name_hotels=',\n'.join(name_hotels) if name_hotels else 'Нет')
+
+    #  Если в базу отелей не записали ни одной информации об отеле из нашего запроса,
+    #  то удаляем запрос из базы (запросов отелей) как ненужный
+    if len(Hotel.select().where(Hotel.request_id == request_id)) == 0:
+        HotelRequest.delete().where(HotelRequest.id == request_id).execute()
+
     finish_work(user_id, chat_id)
 
 
@@ -107,3 +129,4 @@ def send_hotel_inf(user_id: int, chat_id: int, text: str, id_hotel: str):
 
         time.sleep(1.1)
         bot.send_message(user_id, text)
+
