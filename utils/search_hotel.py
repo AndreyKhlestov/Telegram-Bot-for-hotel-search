@@ -62,22 +62,22 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> list or No
                 for i_data in data:
                     id_hotel = i_data["id"]
 
-                    price = int(i_data["ratePlan"]["price"]["exactCurrent"])
+                    price = int(i_data["ratePlan"]["price"]["exactCurrent"]) if "ratePlan" in i_data.keys() else 0
                     text = '🏨 Название отеля: {name_hotel}\n\n' \
                            '⭐ Рейтинг: {rating}\n\n' \
                            '🗺 Адрес: {street_Address}\n\n' \
                            '🚗 Расстояние до центра города: {distance}\n\n' \
-                           '💵 Стоимость за ночь: {price} руб\n\n' \
-                           '💰 Общая стоимость за {num_days} дн: {total_price} руб\n\n' \
+                           '💵 Стоимость за ночь: {price}\n\n' \
+                           '💰 Общая стоимость за {num_days} дн: {total_price}\n\n' \
                            '🌐 Ссылка: {url}'\
                         .format(
                             name_hotel=i_data["name"],
                             rating=i_data["guestReviews"]["rating"] if "guestReviews" in i_data.keys() else '-',
                             street_Address=i_data["address"]["streetAddress"] if "streetAddress" in i_data["address"].keys() else '-',
-                            distance=i_data["landmarks"][0]["distance"],
-                            price=f'{price:n}',
+                            distance=i_data["landmarks"][0]["distance"] if "landmarks" in i_data.keys() else '-',
+                            price=f'{price:n} руб' if price != 0 else 'не указана',
                             num_days=num_days,
-                            total_price=f'{(price * num_days):n}',
+                            total_price=f'{(price * num_days):n} руб' if price != 0 else '-',
                             url="https://www.hotels.com/ho" + str(id_hotel)
                             )
 

@@ -7,6 +7,7 @@ from keyboards.inline.keyboard_yes_or_no import keyboards_yes_or_no
 from datetime import datetime, timedelta
 from loguru import logger
 from handlers.special_heandlers.quantity_hotels import start_quantity_hotels
+import json
 
 
 @logger.catch()
@@ -20,6 +21,44 @@ def __choosing_actions__(user_id: int, chat_id: int) -> tuple:
         text = 'выезда'
         new_date = get_data(user_id, chat_id, 'check_In') + timedelta(days=1)
     return text, new_date
+
+
+@logger.catch()
+def __editing_calendar__(text: str, key: str):
+    if text:
+        keyboard_dict = json.loads(text.replace("'", '"'))
+        if key == 'y':  # редактирование отображения года
+            keyboard_dict['inline_keyboard'][0][0] = keyboard_dict['inline_keyboard'][0][1]
+            keyboard_dict['inline_keyboard'][0][1] = keyboard_dict['inline_keyboard'][1][0]
+            keyboard_dict['inline_keyboard'].pop(1)
+        elif key == 'm':  # редактирование месяцев
+            for _ in range(len(keyboard_dict['inline_keyboard'])):
+                for _ in range(3):
+                    if keyboard_dict['inline_keyboard'][0][0]['text'] == ' ':
+                        keyboard_dict['inline_keyboard'][0].pop(0)
+                    else:
+                        break
+                if len(keyboard_dict['inline_keyboard'][0]) == 0:
+                    keyboard_dict['inline_keyboard'].pop(0)
+                else:
+                    break
+        elif key == 'd':  # редактирование дат
+            days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+            for i, i_day in enumerate(days):
+                keyboard_dict['inline_keyboard'][0][i]['text'] = i_day
+            for _ in range(len(keyboard_dict['inline_keyboard']) - 2):
+                count = 0
+                for j in range(7):
+                    if keyboard_dict['inline_keyboard'][1][j]['text'] == ' ':
+                        count += 1
+                    else:
+                        break
+                if count == 7:
+                    keyboard_dict['inline_keyboard'].pop(1)
+                else:
+                    break
+
+        return str(keyboard_dict).replace("'", '"')
 
 
 @logger.catch()
@@ -38,6 +77,7 @@ def start_input_data_in_calendar(user_id: int, chat_id: int) -> None:
     logger.info('Запуск календаря')
     text, my_date = __choosing_actions__(user_id, chat_id)
     calendar, step = DetailedTelegramCalendar(min_date=my_date, locale='ru').build()
+    calendar = __editing_calendar__(calendar, step)
     bot.send_message(user_id, f'Выберете дату {text}', reply_markup=calendar)
 
 
@@ -49,6 +89,7 @@ def input_data_in_calendar(call: CallbackQuery) -> None:
     logger.info('Выбор даты в календаре')
     text, my_date = __choosing_actions__(call.from_user.id, call.message.chat.id)
     result, key, step = DetailedTelegramCalendar(min_date=my_date, locale='ru').process(call.data)
+    key = __editing_calendar__(key, step)
 
     if not result and key:
         bot.edit_message_text(f'Выберете дату {text}',

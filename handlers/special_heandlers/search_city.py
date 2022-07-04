@@ -25,7 +25,7 @@ def processing_city(message: Message) -> None:
     """Функция для поиска города, введенного пользователем через клавиатуру"""
     logger.info('Обработка ответа пользователя - название города')
 
-    if message.text.replace(' ', '').replace('-', '').isalpha():
+    if message.text.replace(' ', '').replace('-', '').replace(',', '').isalpha():
         name_city = message.text.capitalize()
 
         # Отправка текста и стикера поиска
@@ -56,8 +56,8 @@ def processing_city(message: Message) -> None:
 
     else:
         bot.send_message(message.from_user.id, "❌ Неправильный ввод!\n"
-                                               "Название города должно состоять только из букв и может содержать "
-                                               "пробелы или тире ('-')")
+                                               "Название города или локации должно состоять только из букв и может "
+                                               "содержать пробелы, тире ('-') или запятые(,)")
 
 
 @bot.callback_query_handler(func=lambda call:
