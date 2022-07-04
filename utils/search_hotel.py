@@ -7,6 +7,7 @@ from handlers.special_heandlers.finish_work import finish_work
 import requests
 import re
 import json
+import locale
 
 
 @logger.catch()
@@ -14,6 +15,8 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> list or No
     """Функция для запроса отелей и вывода найденной информации в списке про каждый отель отдельно (отредактированный
     текст для отправки пользователю и id отеля (для дальнейшего поиска фото))"""
     logger.info('Запрос отелей')
+    locale.setlocale(locale.LC_ALL, f"{config.LOCALE}.UTF-8")
+
     date_check_in = get_data(user_id, chat_id, 'check_In')
     date_check_out = get_data(user_id, chat_id, 'check_Out')
     num_days = date_check_out - date_check_in
@@ -65,15 +68,16 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> list or No
                            '🗺 Адрес: {street_Address}\n\n' \
                            '🚗 Расстояние до центра города: {distance}\n\n' \
                            '💵 Стоимость за ночь: {price} руб\n\n' \
-                           '💰 Общая стоимость: {total_price} руб\n\n' \
+                           '💰 Общая стоимость за {num_days} дн: {total_price} руб\n\n' \
                            '🌐 Ссылка: {url}'\
                         .format(
                             name_hotel=i_data["name"],
                             rating=i_data["guestReviews"]["rating"] if "guestReviews" in i_data.keys() else '-',
                             street_Address=i_data["address"]["streetAddress"] if "streetAddress" in i_data["address"].keys() else '-',
                             distance=i_data["landmarks"][0]["distance"],
-                            price=price,
-                            total_price=price * num_days,
+                            price=f'{price:n}',
+                            num_days=num_days,
+                            total_price=f'{(price * num_days):n}',
                             url="https://www.hotels.com/ho" + str(id_hotel)
                             )
 

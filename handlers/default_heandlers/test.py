@@ -5,6 +5,7 @@ from loader import bot
 from database.models import HotelRequest, Hotel
 import json
 import datetime
+from keyboards.inline.keyboard_yes_or_no import keyboards_yes_or_no
 
 
 @bot.message_handler(commands=['test'])
@@ -16,9 +17,9 @@ def bot_test(message: Message):
     my_location = 'Лондон, Англия, Великобритания'
 
     my_main_info = 'Выбрано место: Лондон, Англия, Великобритания\n' \
-                'Дата заезда: 2022-06-29\n' \
-                'Дата выезда: 2022-06-30\n' \
-                'Количество отелей для вывода : 5'
+                    'Дата заезда: 2022-06-29\n' \
+                    'Дата выезда: 2022-06-30\n' \
+                    'Количество отелей для вывода : 5'
 
     my_inf_hotels = [
         (
@@ -69,38 +70,24 @@ def bot_test(message: Message):
         )
     ]
 
-
-
-    my_hotelrequest = HotelRequest.create(user_id=my_user_id,
-                                          command=my_command,
-                                        location=my_location,
-                                        main_info=my_main_info,
-                                        date=datetime.datetime.now().strftime('%Y.%m.%d  %H:%M:%S')
-                                        ).id
-
-    if len(Hotel.select().where(Hotel.request_id == my_hotelrequest)) == 0:
-        HotelRequest.delete().where(HotelRequest.id == my_hotelrequest).execute()
-
-    # for i, i_hotel in enumerate(my_inf_hotels):
-    #     Hotel.create(request_id=my_hotelrequest,
-    #                  num_queue=i,
-    #                  hotel_info=i_hotel[0]
-    #                  )
-
-
-
-    # my_request = HotelRequest.select().where(HotelRequest.user_id == message.from_user.id).order_by(-HotelRequest.date)\
-    #     .get()
-
-    # text = f'Команда пользователя: {my_request.command}\n' \
-    #        f'Название локации: {my_request.location}\n' \
-    #        f'Дата и время вывода информации: {my_request.date}\n' \
-    #        f'Основная информация запроса {my_request.main_info}\n'
-
+    index = 1
+    location = 'Лондон, Англия,Великобритания'
+    command = None
+    text_button_yes = f'{index + 1},- {location},- {command}'
+    keyboards = keyboards_yes_or_no([text_button_yes, 'exit'])
+    bot.send_message(my_user_id, 'Выдать предыдущий запрос?', reply_markup=keyboards)
 
     # data = HotelRequest.select().where(HotelRequest.user_id == message.from_user.id).order_by(-HotelRequest.date)
     # for i_data in data:
     #     print(i_data.date)
 
-    # id = HotelRequest.select().where(HotelRequest.user_id == message.from_user.id).order_by(-HotelRequest.date).get().id
+
+    # data = HotelRequest.select().where(HotelRequest.user_id == my_user_id,
+    #                                    (HotelRequest.command == my_command) |
+    #                                    (HotelRequest.location == my_location)
+    #                                    ).order_by(-HotelRequest.date)
+    # for i_data in data:
+    #     print(i_data.id, i_data.date)
+
+
 

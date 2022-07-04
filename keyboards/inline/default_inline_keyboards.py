@@ -1,4 +1,4 @@
-from telebot.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 def inline_keyboards(data: list or dict) -> InlineKeyboardMarkup:

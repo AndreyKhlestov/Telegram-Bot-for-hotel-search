@@ -88,7 +88,7 @@ def confirmation_date(call: CallbackQuery) -> None:
             start_quantity_hotels(call.from_user.id, call.message.chat.id)  # Запуск сценария ввода количества отелей
     else:  # Если пользователь не подтвердил дату (кнопка НЕТ), то запускаем заново ввод этой даты
         bot.delete_message(call.message.chat.id, call.message.id)
-        start_calendar(call.from_user.id, call.message.chat.id)
+        start_input_data_in_calendar(call.from_user.id, call.message.chat.id)
 
 
 @bot.message_handler(state=[UserState.check_In, UserState.check_Out])
