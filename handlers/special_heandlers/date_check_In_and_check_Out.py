@@ -4,61 +4,10 @@ from telegram_bot_calendar import DetailedTelegramCalendar
 from telebot.types import CallbackQuery, Message
 from utils.data import set_data, get_data
 from keyboards.inline.keyboard_yes_or_no import keyboards_yes_or_no
-from datetime import datetime, timedelta
+from utils.choosing_data import choosing_data
 from loguru import logger
 from handlers.special_heandlers.quantity_hotels import start_quantity_hotels
-import json
-
-
-@logger.catch()
-def __choosing_actions__(user_id: int, chat_id: int) -> tuple:
-    """Функция для выдачи слова и начальной даты для календаря в зависимости от состояния пользователя
-    (для удобства написания кода)"""
-    if bot.get_state(user_id, chat_id) == 'UserState:check_In':
-        text = 'заезда'
-        new_date = datetime.now().date()
-    else:
-        text = 'выезда'
-        new_date = get_data(user_id, chat_id, 'check_In') + timedelta(days=1)
-    return text, new_date
-
-
-@logger.catch()
-def __editing_calendar__(text: str, key: str):
-    if text:
-        keyboard_dict = json.loads(text.replace("'", '"'))
-        if key == 'y':  # редактирование отображения года
-            keyboard_dict['inline_keyboard'][0][0] = keyboard_dict['inline_keyboard'][0][1]
-            keyboard_dict['inline_keyboard'][0][1] = keyboard_dict['inline_keyboard'][1][0]
-            keyboard_dict['inline_keyboard'].pop(1)
-        elif key == 'm':  # редактирование месяцев
-            for _ in range(len(keyboard_dict['inline_keyboard'])):
-                for _ in range(3):
-                    if keyboard_dict['inline_keyboard'][0][0]['text'] == ' ':
-                        keyboard_dict['inline_keyboard'][0].pop(0)
-                    else:
-                        break
-                if len(keyboard_dict['inline_keyboard'][0]) == 0:
-                    keyboard_dict['inline_keyboard'].pop(0)
-                else:
-                    break
-        elif key == 'd':  # редактирование дат
-            days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-            for i, i_day in enumerate(days):
-                keyboard_dict['inline_keyboard'][0][i]['text'] = i_day
-            for _ in range(len(keyboard_dict['inline_keyboard']) - 2):
-                count = 0
-                for j in range(7):
-                    if keyboard_dict['inline_keyboard'][1][j]['text'] == ' ':
-                        count += 1
-                    else:
-                        break
-                if count == 7:
-                    keyboard_dict['inline_keyboard'].pop(1)
-                else:
-                    break
-
-        return str(keyboard_dict).replace("'", '"')
+from utils.editing_calendar import editing_calendar
 
 
 @logger.catch()
@@ -75,9 +24,9 @@ def start_input_data_in_calendar(user_id: int, chat_id: int) -> None:
     Сделана раздельно с началом процедуры ввода дат (start_calendar), т.к. используется несколько раз в разных
     состояниях (ввод въезда и выезда из отеля)"""
     logger.info('Запуск календаря')
-    text, my_date = __choosing_actions__(user_id, chat_id)
+    text, my_date = choosing_data(user_id, chat_id)
     calendar, step = DetailedTelegramCalendar(min_date=my_date, locale='ru').build()
-    calendar = __editing_calendar__(calendar, step)
+    calendar = editing_calendar(calendar, step)
     bot.send_message(user_id, f'Выберете дату {text}', reply_markup=calendar)
 
 
@@ -87,9 +36,9 @@ def input_data_in_calendar(call: CallbackQuery) -> None:
     """Функция для продолжения работы календаря
     Запускается, при нажатии кнопок в календаре и завершает работе при выборе конечной даты"""
     logger.info('Выбор даты в календаре')
-    text, my_date = __choosing_actions__(call.from_user.id, call.message.chat.id)
+    text, my_date = choosing_data(call.from_user.id, call.message.chat.id)
     result, key, step = DetailedTelegramCalendar(min_date=my_date, locale='ru').process(call.data)
-    key = __editing_calendar__(key, step)
+    key = editing_calendar(key, step)
 
     if not result and key:
         bot.edit_message_text(f'Выберете дату {text}',
@@ -115,7 +64,7 @@ def confirmation_date(call: CallbackQuery) -> None:
     logger.info('Подтверждение даты. Обработка ответа (да/нет)')
     if call.data == 'Да':
         result = get_data(call.from_user.id, call.message.chat.id, 'cache')
-        text = __choosing_actions__(call.from_user.id, call.message.chat.id)[0]
+        text = choosing_data(call.from_user.id, call.message.chat.id)[0]
         bot.edit_message_text(f"Дата {text} {result}",
                               call.message.chat.id,
                               call.message.message_id)
