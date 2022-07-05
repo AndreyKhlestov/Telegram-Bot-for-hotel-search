@@ -15,12 +15,14 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> list or No
     """Функция для запроса отелей и вывода найденной информации в списке про каждый отель отдельно (отредактированный
     текст для отправки пользователю и id отеля (для дальнейшего поиска фото))"""
     logger.info('Запрос отелей')
-    locale.setlocale(locale.LC_ALL, f"{config.LOCALE}.UTF-8")
+    locale.setlocale(locale.LC_ALL, f"{config.LOCALE}.UTF-8")  # для наглядного отображения цены (по три символа)
 
     date_check_in = get_data(user_id, chat_id, 'check_In')
     date_check_out = get_data(user_id, chat_id, 'check_Out')
     num_days = date_check_out - date_check_in
     num_days = num_days.days
+
+    my_command = get_data(user_id, chat_id, 'commands')
 
     querystring = {"destinationId": f"{get_data(user_id, chat_id, 'destination_Id')}",
                    "pageNumber": str(page_number),
@@ -31,12 +33,13 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> list or No
                    "locale": config.LOCALE,
                    "currency": config.CURRENCY}
 
-    if get_data(user_id, chat_id, 'commands') == "bestdeal":
+    if my_command == "bestdeal":
         sort_order = "DISTANCE_FROM_LANDMARK"
         querystring["priceMin"] = get_data(user_id, chat_id, 'price_min')
         querystring["priceMax"] = get_data(user_id, chat_id, 'price_max')
+        querystring["pageSize"] = '25'
 
-    elif get_data(user_id, chat_id, 'commands') == "lowprice":
+    elif my_command == "lowprice":
         sort_order = "PRICE"
 
     else:
