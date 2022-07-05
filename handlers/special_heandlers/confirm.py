@@ -50,4 +50,6 @@ def confirmation_date(call: CallbackQuery) -> None:
         set_data(call.from_user.id, call.message.chat.id, 'main_info', text)
         ask_photo(call.from_user.id, call.message.chat.id)
     else:
+        bot.edit_message_text(call.message.text, call.message.chat.id, call.message.message_id)
+        bot.send_message(call.message.chat.id, 'Предоставьте новые данные')
         start_search_city(call.from_user.id, call.message.chat.id)
