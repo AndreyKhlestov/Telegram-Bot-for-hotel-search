@@ -48,8 +48,7 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> list or No
     url = "https://hotels4.p.rapidapi.com/properties/list"
     try:
         response = request_to_api(url, querystring)  # ответ на запрос
-
-    except requests.exceptions.ConnectTimeout:
+    except (requests.exceptions.ConnectTimeout, requests.exceptions.ReadTimeout):
         bot.send_message(user_id, 'К сожалению, сервер не отвечает. Попробуйте позже.')
         finish_work(user_id, chat_id)
 

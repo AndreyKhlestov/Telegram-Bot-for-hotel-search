@@ -20,7 +20,7 @@ def send_history(user_id: int, chat_id: int, index: int = 0):
     command = get_data(user_id, chat_id, 'commands')
 
     if location:
-        requests = HotelRequest.select().where(HotelRequest.user_id == user_id, HotelRequest.location == location) \
+        requests = HotelRequest.select().where(HotelRequest.user_id == user_id, HotelRequest.id_location == location) \
                         .order_by(-HotelRequest.date)
 
     elif command:

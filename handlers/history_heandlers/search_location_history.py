@@ -14,9 +14,12 @@ def search_location_history(user_id: int, chat_id: int) -> None:
     logger.info('Выдача списка городов из истории запроса отелей"')
     bot.set_state(user_id, UserState.search_location_history, chat_id)
 
-    sort_req = HotelRequest.select(HotelRequest.location).where(HotelRequest.user_id == user_id).distinct()
+    sort_req = HotelRequest.select(HotelRequest.id_location, HotelRequest.location).where(HotelRequest.user_id == user_id).distinct()
 
-    locations = [i_req.location for i_req in sort_req]
+    # locations = [i_req.location.split(', ')[0] for i_req in sort_req]
+    locations = dict()
+    for i_req in sort_req:
+        locations[i_req.id_location] = i_req.location
     keyboards = inline_keyboards(locations)
     bot.send_message(user_id, 'Выдать историю запросов по:', reply_markup=keyboards)
 
