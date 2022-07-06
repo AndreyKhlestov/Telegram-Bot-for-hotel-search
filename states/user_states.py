@@ -15,6 +15,8 @@ class UserState(StatesGroup):  # Состояния пользователя
     confirm = State()
     quantity_photo = State()
     search_hotel = State()
+    send_inf_hotel = State()
+    ask_send_add_inf_hotel = State()
     finish = State()
 
     choice_option_history = State()

@@ -26,7 +26,7 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> list or No
 
     querystring = {"destinationId": f"{get_data(user_id, chat_id, 'destination_Id')}",
                    "pageNumber": str(page_number),
-                   "pageSize": f"{get_data(user_id, chat_id, 'num_hotels')}",
+                   "pageSize": "25",
                    "checkIn": f"{date_check_in}",
                    "checkOut": f"{date_check_out}",
                    "adults1": "1",
@@ -37,7 +37,6 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> list or No
         sort_order = "DISTANCE_FROM_LANDMARK"
         querystring["priceMin"] = get_data(user_id, chat_id, 'price_min')
         querystring["priceMax"] = get_data(user_id, chat_id, 'price_max')
-        querystring["pageSize"] = '25'
 
     elif my_command == "lowprice":
         sort_order = "PRICE"
@@ -56,6 +55,7 @@ def search_hotel(user_id: int, chat_id: int, page_number: int = 1) -> list or No
 
     else:
         pattern = r'(?<="results":).+?(?=,"pagination")'
+
         find = re.search(pattern, response.text)
 
         if find:

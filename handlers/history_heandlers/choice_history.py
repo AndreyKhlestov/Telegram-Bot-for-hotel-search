@@ -2,7 +2,6 @@ from loader import bot
 from loguru import logger
 from database.models import HotelRequest
 from handlers.special_heandlers.finish_work import finish_work
-from utils.data import set_data
 from states.user_states import UserState
 from telebot.types import Message, CallbackQuery
 from keyboards.inline.default_inline_keyboards import inline_keyboards
@@ -16,10 +15,6 @@ def choice_option_history(message: Message) -> None:
     """Выдача вариантов для вывода истории запроса отелей"""
     logger.info('Выдача вариантов для вывода истории запроса отелей"')
     bot.set_state(message.from_user.id, UserState.choice_option_history, message.chat.id)
-
-    # Обнуляем данные location и commands
-    set_data(message.from_user.id, message.chat.id, 'location', '')
-    set_data(message.from_user.id, message.chat.id, 'commands', '')
 
     requests = HotelRequest.select().where(HotelRequest.user_id == message.from_user.id)
     if requests:  # есть ли история запросов у пользователя

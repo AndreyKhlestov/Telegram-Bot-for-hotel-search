@@ -20,6 +20,7 @@ class HotelRequest(BaseModel):
     id = PrimaryKeyField(unique=True)
     user_id = CharField()
     command = CharField()
+    id_location = CharField()
     location = CharField()
     main_info = CharField()
     date = DateTimeField()
@@ -33,6 +34,7 @@ class Hotel(BaseModel):
     hotel_info - информация об отеле
     """
     request_id = ForeignKeyField(HotelRequest)
+    hotel_id = CharField()
     num_queue = IntegerField()
     hotel_info = CharField()
 

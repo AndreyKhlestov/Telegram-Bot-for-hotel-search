@@ -23,7 +23,6 @@ def ask_photo(user_id: int, chat_id: int) -> None:
 def confirmation_date(call: CallbackQuery) -> None:
     """Функция для обработки ответа пользователя (да/нет - через кнопку) на вопрос о выводе фото"""
     logger.info('Обработка ответа пользователя (да/нет) на вопрос о выводе фото')
-    set_data(call.from_user.id, call.message.chat.id, 'print_photo', call.data)
     if call.data == 'Да':
         bot.delete_message(call.message.chat.id, call.message.id)
         bot.send_message(call.from_user.id, 'Сколько выводить фотографий ? (не больше 10)',
