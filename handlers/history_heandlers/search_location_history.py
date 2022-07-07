@@ -16,7 +16,6 @@ def search_location_history(user_id: int, chat_id: int) -> None:
 
     sort_req = HotelRequest.select(HotelRequest.id_location, HotelRequest.location).where(HotelRequest.user_id == user_id).distinct()
 
-    # locations = [i_req.location.split(', ')[0] for i_req in sort_req]
     locations = dict()
     for i_req in sort_req:
         locations[i_req.id_location] = i_req.location

@@ -34,7 +34,7 @@ def processing_city(message: Message) -> None:
                                    'CAACAgIAAxkBAAEFJudiu0z--ent9HLJbsxM7S9nAQjK1QACIwADKA9qFCdRJeeMIKQGKQQ')
         try:
             found_cities_dict = search_city(name_city)
-        except (requests.exceptions.ConnectTimeout, requests.ConnectionError):
+        except (KeyError, requests.ConnectionError):
             # Удаление текста и стикера поиска
             bot.delete_message(message_with_stic.chat.id, message_with_stic.id)
             bot.delete_message(sticker.chat.id, sticker.id)

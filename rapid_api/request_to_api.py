@@ -20,10 +20,9 @@ def request_to_api(url: str, querystring: dict) -> Response:
             logger.info('Запрос успешно получен')
             return response
         elif response.status_code == 429:
-            logger.info('Превышена ежемесячная квота запросов')
-            raise requests.exceptions.ConnectionError('Превышена ежемесячная квота запросов')
+            logger.error('Превышена ежемесячная квота запросов')
         elif response.status_code != requests.codes.ok:  # проверка статус кода ответа
-            logger.info('Статус кода запроса не положительный')
+            logger.error('Статус кода запроса не положительный')
         time.sleep(1)
     else:
-        raise requests.exceptions.ConnectTimeout('Статус кода запроса не положительный')
+        logger.error('Статус кода всех пяти запросов не положительный')

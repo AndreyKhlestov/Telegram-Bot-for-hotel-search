@@ -46,6 +46,7 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
     num_hotels = int(get_data(user_id, chat_id, 'num_hotels'))  # Нужное количество отелей для вывода
     my_command = get_data(user_id, chat_id, 'commands')  # название команды, который ввел пользователь
     count_repeat_hotels = 0
+    status_request = True
 
     if my_command == "bestdeal":
         pattern = r'(?<=Расстояние до центра города: ).+?(?= км)'  # шаблон для дальнейшего получения расстояния отеля
@@ -58,88 +59,99 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
         message_with_stic = bot.send_message(user_id, 'Веду поиск отелей')
         sticker = bot.send_sticker(chat_id,
                                    'CAACAgIAAxkBAAEFJudiu0z--ent9HLJbsxM7S9nAQjK1QACIwADKA9qFCdRJeeMIKQGKQQ')
+        try:
+            inf_hotels = search_hotel(user_id, chat_id, page_number)
+        except (KeyError, requests.ConnectionError):
+            # Удаление текста и стикера поиска
+            bot.delete_message(message_with_stic.chat.id, message_with_stic.id)
+            bot.delete_message(sticker.chat.id, sticker.id)
 
-        inf_hotels = search_hotel(user_id, chat_id, page_number)
-
-        # Удаление текста и стикера поиска
-        bot.delete_message(message_with_stic.chat.id, message_with_stic.id)
-        bot.delete_message(sticker.chat.id, sticker.id)
-
-        if inf_hotels:
-            if get_data(user_id, chat_id, 'first_index_hotel'):
-                i_start = int(get_data(user_id, chat_id, 'first_index_hotel'))
-                inf_hotels = inf_hotels[i_start:]
-                set_data(user_id, chat_id, 'first_index_hotel', '')
-
-            for index, data in enumerate(inf_hotels):
-                text, id_hotel = data
-
-                if id_hotel in list_id_hotels:
-                    count_repeat_hotels += 1
-                    if count_repeat_hotels >= 10:
-                        break
-                    continue
-
-                if my_command == "bestdeal":
-                    dis = float(re.search(pattern, text)[0].replace(',', '.'))  # получаем расстояние до центра города
-                    if not dis_min <= dis <= dis_max:  # Если расстояние не входит в промежуток введенный пользователем
-                        if dis > dis_max:  # Если расстояние больше максимального
-                            num_hotels = count_hotel
-                            break
-                        else:
-                            continue
-                quantity_photo = get_data(user_id, chat_id, 'num_photo')  # Количество фото для вывода (str или None)
-                try:
-                    if quantity_photo:
-                        list_url_photo = get_photos(id_hotel, quantity_photo)
-                        if list_url_photo is None:
-                            bot.send_message(user_id, "⚠ К сожалению, у отеля нет фото")
-                        elif int(quantity_photo) == 1:
-                            bot.send_photo(chat_id, list_url_photo[0].media)
-                        else:
-                            bot.send_media_group(chat_id, list_url_photo[:int(quantity_photo)])
-                except (KeyError, requests.exceptions.ConnectTimeout, ApiTelegramException):
-                    bot.send_message(user_id,
-                                     "⚠ К сожалению, не удалось загрузить фото. Но их можно посмотреть на сайте "
-                                     "перейдя по ссылке")
-
-                time.sleep(1.1)
-                bot.send_message(user_id, text)
-                list_id_hotels.append(id_hotel)  # Добавляем id отеля в список, для будущих проверок отелей на повтор
-
-                # Сохраняем в базу о найденных отелях
-                Hotel.create(request_id=request_id,
-                             hotel_id=id_hotel,
-                             num_queue=count_hotel,
-                             hotel_info=text
-                             )
-                count_hotel += 1
-
-                if count_hotel == num_hotels:  # Если все нашли
-                    if len(inf_hotels) == count_hotel:  # Если использовали весь список отелей
-                        set_data(user_id, chat_id, 'first_index_hotel', '')
-                        set_data(user_id, chat_id, 'pageNumber', str(page_number + 1))
-                    else:
-                        set_data(user_id, chat_id, 'first_index_hotel', str(index + 1))
-                        set_data(user_id, chat_id, 'pageNumber', str(page_number))
-                    break
-
+            bot.send_message(user_id, 'К сожалению, сервер не отвечает. Попробуйте позже.')
+            status_request = False
+            break
         else:
-            break
-        if count_repeat_hotels >= 10:
-            break
+            # Удаление текста и стикера поиска
+            bot.delete_message(message_with_stic.chat.id, message_with_stic.id)
+            bot.delete_message(sticker.chat.id, sticker.id)
 
-        page_number += 1
+            if inf_hotels:
+                if get_data(user_id, chat_id, 'first_index_hotel'):
+                    i_start = int(get_data(user_id, chat_id, 'first_index_hotel'))
+                    inf_hotels = inf_hotels[i_start:]
+                    set_data(user_id, chat_id, 'first_index_hotel', '')
 
-    if count_hotel == int(get_data(user_id, chat_id, 'num_hotels')):
-        bot.send_message(user_id, 'Вывести еще отели?', reply_markup=keyboards_yes_or_no())
+                for index, data in enumerate(inf_hotels):
+                    text, id_hotel = data
+
+                    if id_hotel in list_id_hotels:
+                        count_repeat_hotels += 1
+                        if count_repeat_hotels >= 10:
+                            break
+                        continue
+
+                    if my_command == "bestdeal":
+                        dis = float(re.search(pattern, text)[0].replace(',', '.'))  # расстояние до центра города
+                        if not dis_min <= dis <= dis_max:  # расстояние не входит в промежуток введенный пользователем
+                            if dis > dis_max:  # Если расстояние больше максимального
+                                num_hotels = count_hotel
+                                break
+                            else:
+                                continue
+                    quantity_photo = get_data(user_id, chat_id, 'num_photo')  # Кол-во фото для вывода (str или None)
+                    try:
+                        if quantity_photo:
+                            list_url_photo = get_photos(id_hotel, quantity_photo)
+                            if list_url_photo is None:
+                                bot.send_message(user_id, "⚠ К сожалению, у отеля нет фото")
+                            elif int(quantity_photo) == 1:
+                                bot.send_photo(chat_id, list_url_photo[0].media)
+                            else:
+                                bot.send_media_group(chat_id, list_url_photo[:int(quantity_photo)])
+                    except (KeyError, requests.exceptions.ConnectTimeout, ApiTelegramException):
+                        bot.send_message(user_id,
+                                         "⚠ К сожалению, не удалось загрузить фото. Но их можно посмотреть на сайте "
+                                         "перейдя по ссылке")
+
+                    time.sleep(1.1)
+                    bot.send_message(user_id, text)
+                    list_id_hotels.append(id_hotel)  # Добавляем id отеля в список, для будущих проверок отелей
+
+                    # Сохраняем в базу о найденных отелях
+                    Hotel.create(request_id=request_id,
+                                 hotel_id=id_hotel,
+                                 num_queue=count_hotel,
+                                 hotel_info=text
+                                 )
+                    count_hotel += 1
+
+                    if count_hotel == num_hotels:  # Если все нашли
+                        if len(inf_hotels) == count_hotel:  # Если использовали весь список отелей
+                            set_data(user_id, chat_id, 'first_index_hotel', '')
+                            set_data(user_id, chat_id, 'pageNumber', str(page_number + 1))
+                        else:
+                            set_data(user_id, chat_id, 'first_index_hotel', str(index + 1))
+                            set_data(user_id, chat_id, 'pageNumber', str(page_number))
+                        break
+
+            else:
+                break
+            if count_repeat_hotels >= 10:
+                break
+
+            page_number += 1
+
+    if status_request:
+        if count_hotel == int(get_data(user_id, chat_id, 'num_hotels')):
+            bot.send_message(user_id, 'Вывести еще отели?', reply_markup=keyboards_yes_or_no())
+        else:
+            if 0 < count_hotel < int(get_data(user_id, chat_id, 'num_hotels')):
+                bot.send_message(user_id, '⚠ К сожалению, больше нет отелей подходящих по заданным критериям')
+            elif count_hotel == 0:
+                #  удаляем запрос из базы (запросов отелей) как ненужный
+                HotelRequest.delete().where(HotelRequest.id == request_id).execute()
+                bot.send_message(user_id, '⚠ К сожалению, нет отелей подходящих по заданным критериям')
+            finish_work(user_id, chat_id)
     else:
-        if 0 < count_hotel < int(get_data(user_id, chat_id, 'num_hotels')):
-            bot.send_message(user_id, '⚠ К сожалению, больше нет отелей подходящих по заданным критериям')
-        elif count_hotel == 0:
-            #  удаляем запрос из базы (запросов отелей) как ненужный
-            HotelRequest.delete().where(HotelRequest.id == request_id).execute()
-            bot.send_message(user_id, '⚠ К сожалению, нет отелей подходящих по заданным критериям')
         finish_work(user_id, chat_id)
 
 

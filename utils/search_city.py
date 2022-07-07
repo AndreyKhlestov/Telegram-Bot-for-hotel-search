@@ -22,7 +22,7 @@ def edit_text(text: str) -> str:
     return text
 
 
-@logger.catch()
+@logger.catch(reraise=True)
 def search_city(city: str) -> tuple or None:
     """Функция для поиска города.
     Все найденные данные сохраняет в словарь (где ключ - 'destinationId', значение - расположение (данные из "caption"))
@@ -31,9 +31,11 @@ def search_city(city: str) -> tuple or None:
     name_city = city
     url = "https://hotels4.p.rapidapi.com/locations/v2/search"
     querystring = {"query": name_city, "locale": config.LOCALE, "currency": config.CURRENCY}
+
     response = request_to_api(url, querystring)  # ответ на запрос
+
     if not response:
-        raise requests.ConnectionError
+        raise requests.ConnectionError('Сбой при получении запроса')
 
     # проверка в тексте ответа регулярным выражением (на случай, если не будет ключа)
     pattern = r'(?<="CITY_GROUP","entities":).+?[\]]'
