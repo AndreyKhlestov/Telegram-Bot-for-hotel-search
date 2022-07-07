@@ -24,7 +24,7 @@ def start_search_city(user_id: int, chat_id: int) -> None:
 def processing_city(message: Message) -> None:
     """Функция для поиска города, введенного пользователем через клавиатуру"""
     logger.info('Обработка ответа пользователя - название города')
-
+    bot.delete_message(message.chat.id, message.message_id - 1)
     if message.text.replace(' ', '').replace('-', '').replace(',', '').isalpha():
         name_city = message.text.capitalize()
 

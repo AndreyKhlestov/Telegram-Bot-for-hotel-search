@@ -31,4 +31,4 @@ def quantity_hotels(message: Message) -> None:
             bot.send_message(message.from_user.id, 'Количество отелей должно быть больше 0 и не больше 25\n ')
 
     else:
-        bot.send_message(message.from_user.id, 'Количество отелей должно быть целым числом\n ')
+        bot.send_message(message.from_user.id, 'Количество отелей должно быть целым положительным числом\n ')

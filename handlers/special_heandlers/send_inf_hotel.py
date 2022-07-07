@@ -64,7 +64,7 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
                                    'CAACAgIAAxkBAAEFJudiu0z--ent9HLJbsxM7S9nAQjK1QACIwADKA9qFCdRJeeMIKQGKQQ')
         try:
             inf_hotels = search_hotel(user_id, chat_id, page_number)
-        except (KeyError, requests.ConnectionError):
+        except requests.ConnectionError:
             # Удаление текста и стикера поиска
             bot.delete_message(message_with_stic.chat.id, message_with_stic.id)
             bot.delete_message(sticker.chat.id, sticker.id)
@@ -155,6 +155,7 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
                 bot.send_message(user_id, '⚠ К сожалению, нет отелей подходящих по заданным критериям')
             finish_work(user_id, chat_id)
     else:
+        HotelRequest.delete().where(HotelRequest.id == request_id).execute()
         finish_work(user_id, chat_id)
 
 
