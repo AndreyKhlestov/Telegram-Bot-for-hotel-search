@@ -24,8 +24,11 @@ def start_send_hotel_inf(user_id: int, chat_id: int) -> None:
     # Получаем и создаем нужные переменные для работы
 
     if get_data(user_id, chat_id, 'pageNumber'):  # Если пользователь выбрал вывод доп. отелей по тому же запросу
-
-        request_id = HotelRequest.select().where(HotelRequest.user_id == user_id).order_by(-HotelRequest.date).get().id
+        last_request = HotelRequest.select().where(HotelRequest.user_id == user_id).order_by(-HotelRequest.date).get()
+        request_id = last_request.id
+        text_main_info = last_request.main_info
+        text_main_info = text_main_info[: text_main_info.rfind(':') + 2] + get_data(user_id, chat_id, 'num_hotels')
+        HotelRequest.update(main_info=text_main_info).where(HotelRequest.id == request_id).execute()
         list_id_hotels = [i_hotel.hotel_id for i_hotel in Hotel.select().where(Hotel.request_id == request_id)]
         page_number = int(get_data(user_id, chat_id, 'pageNumber'))  # Номер страницы запроса
         count_hotel = len(Hotel.select().where(Hotel.request_id == request_id))  # Счетчик уже отправленных отелей
