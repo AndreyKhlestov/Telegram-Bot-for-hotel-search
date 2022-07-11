@@ -7,5 +7,5 @@ from loader import bot
 @bot.message_handler(commands=['help'])
 @logger.catch()
 def bot_help(message: Message):
-    text = [f'/{command} - {desk}' for command, desk in DEFAULT_COMMANDS if command != 'help']
-    bot.reply_to(message, '\n'.join(text))
+    text = '\n'.join([f'/{command} - {desk}' for command, desk in DEFAULT_COMMANDS if command != 'help'])
+    bot.send_message(message.from_user.id, f'Список команд:\n{text}')
