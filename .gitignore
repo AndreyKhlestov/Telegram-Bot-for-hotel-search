@@ -1,0 +1,6 @@
+.env
+venv/
+.idea/
+database/database.db
+test.py
+handlers/default_heandlers/test.py
